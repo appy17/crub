@@ -1,0 +1,1001 @@
+{data.map((item) =>{
+                      const matchingStylist = item.appointment_option.find(
+                        (option) => option.stylistN === selectedEmployee
+                      );
+                     const services = matchingStylist ? matchingStylist.service  :  [];
+
+                      return matchingStylist &&
+                      compareStartTime(matchingStylist.Initial_T, selectedHour) &&
+                      item.date_option === formattedDate ? (
+                        <Tr fontSize={"small"}>
+                          <Td
+                            fontFamily={"monospace"}
+                            fontSize={"md"}
+                            letterSpacing={2}
+                          >
+                            {item.id}
+                          </Td>
+                          <Td>Admin</Td>
+                          <Td>{matchingStylist.stylistN}</Td>
+                          <Td>
+                           {services.join(', ')}
+                          </Td>
+
+                          <Td>{matchingStylist.Initial_T + "-" + matchingStylist.End_T}</Td>
+                          <Td display={"flex"}>
+                            <Icon
+                              fontSize={"xx-large"}
+                              overflow={"inherit"}
+                              display={matchingStylist.status == "done" ? "none" : "block"}
+                              mr={6}
+                              transition={"ease-in 0.7s"}
+                            >
+                              {matchingStylist.status == "scheduled" ? (
+                                <RiUserLocationFill color="pink" />
+                              ) : matchingStylist.status == "done" ? (
+                                " "
+                              ) : matchingStylist.status == "ongoing" ? (
+                                <MdOutlineRestartAlt
+                                  color="yellow"
+                                  css={{
+                                    animation: "rotate 2s linear infinite",
+                                  }}
+                                />
+                              ) : (
+                                ""
+                              )}
+                            </Icon>
+                            <Button
+                              colorScheme={
+                                matchingStylist.status == "done"
+                                  ? "teal"
+                                  : matchingStylist.status == "ongoing"
+                                  ? "teal"
+                                  : "yellow"
+                              }
+                              mr={0}
+                              onClick={() => {
+                                if (item.status === "scheduled") {
+                                  updateAppointmentStatus(item.id, "ongoing");
+                                } else if (item.status === "ongoing") {
+                                  updateAppointmentStatus(item.id, "done");
+                                }
+                              }}
+                              variant={
+                                item.status == "done" ? "solid" : "outline"
+                              }
+                            >
+                              {item.status == "scheduled" ? (
+                                "Start"
+                              ) : item.status == "done" ? (
+                                <CheckIcon />
+                              ) : item.status == "ongoing" ? (
+                                "Mark Done"
+                              ) : (
+                                ""
+                              )}
+                            </Button>
+                          </Td>
+                        </Tr>
+                      ) : null
+                              })}
+
+-------------------------------------|||||||||||||||||||-----------------------------------------------------------------------------
+
+test.js code -- 9-12-2023--- 8:11 pm 
+import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Button,
+  Center,
+  Checkbox,
+  Grid,
+  GridItem,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Tag,
+  TagCloseButton,
+  TagLabel,
+  Text,
+  Radio,
+  RadioGroup,
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+} from '@chakra-ui/react';
+import { BsCaretDownFill, BsCaretUpFill } from 'react-icons/bs';
+import { CheckIcon } from '@chakra-ui/icons';
+import axios from 'axios';
+
+const YourComponent = () => {
+  const [displayS, setDisplayS] = useState('block');
+  const [displayS2, setDisplayS2] = useState('block');
+  const [bgTest, setBgTest] = useState('transparent');
+  const [pointertest, setPointertest] = useState('auto');
+  const dbpath1 = "http://localhost/backend/";
+  const [Edata, setEData] = useState([
+   
+  ]);
+  const loadEmployeeData = async () => {
+    try {
+      const response = await axios.get(dbpath1 + "getEmployeedata.php");
+      const Employeedata = response.data.phpresult;
+      setEData(Employeedata);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
+  useEffect(() => {
+    loadEmployeeData(); // Call the loadData function when the component mounts
+  }, []);
+  // const [selectedData2, setSelectedData2] = useState('');
+  const [selectAptoption, setSelectAptoption] = useState([
+    {
+      stylistN: '',
+      service: [],
+    },
+  ]);
+
+  const [servicedata, setServiceData] = useState([
+    
+  ]);
+  const loadServiceData = async () => {
+    try {
+      const response = await axios.get(dbpath1 + "getServicedata.php");
+      const Servicedata = response.data.phpresult;
+      setServiceData(Servicedata);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
+  useEffect(() => {
+    loadServiceData(); // Call the loadData function when the component mounts
+  }, []);
+
+  // const toggleItem = (itemName) => {
+  //   setSelectedData2(itemName);
+  // };
+
+  const toggleItem2 = (stylistName, index) => {
+    setSelectAptoption((prevOptions) => {
+      const newOptions = [...prevOptions];
+      // newOptions[index].stylistN = stylistName;
+      if (stylistName !== '') {
+        newOptions[index].stylistN = stylistName;
+      } else {
+        // If stylistName is empty, it means the stylist is deselected
+        // Remove the entire object from the array
+        newOptions.splice(index, 1);
+      }
+      return newOptions;
+    });
+  };
+
+  const addSpecificService = () => {
+    setSelectAptoption((prevOptions) => [
+      ...prevOptions,
+      {
+        stylistN: '',
+        service: [],
+      },
+    ]);
+  };
+
+  const toggleService = (serviceName, index) => {
+    setSelectAptoption((prevOptions) => {
+      const newOptions = [...prevOptions];
+      const selectedServices = newOptions[index].service;
+      if (selectedServices.includes(serviceName)) {
+        newOptions[index].service = selectedServices.filter((service) => service !== serviceName);
+      } else {
+        newOptions[index].service = [...selectedServices, serviceName];
+      }
+      return newOptions;
+    });
+  };
+  const availableStylists = Edata.filter((stylist) => {
+    return !selectAptoption.some((option) => option.stylistN === stylist.name);
+  });
+
+  return (
+    <Box>
+      <Button mt={3} onClick={addSpecificService} colorScheme="teal">
+        Add Specific Service
+      </Button>
+
+      {selectAptoption.map((options, index) => (
+        <Box key={index}>
+          <Center>
+            <Menu>
+              {({ isOpen }) => (
+                <>
+                  <MenuButton
+                    isActive={isOpen}
+                    as={Button}
+                    rightIcon={isOpen ? <BsCaretUpFill /> : <BsCaretDownFill />}
+                    color={'gray.300'}
+                    bg={bgTest}
+                    pointerEvents={pointertest}
+                    border={'1px solid #464F5E'}
+                    display={displayS2}
+                    mt={4}
+                  >
+                    {isOpen ? 'Close List' : 'Select Stylist'}
+                  </MenuButton>
+                  <MenuList maxH={'250px'} overflowY={'scroll'}>
+                    {/* {Edata.map((item, i) => (
+                      <MenuItem key={i}>
+                        <RadioGroup
+                          value={options.stylistN}
+                          onChange={(e) => toggleItem2(e, index)}
+                        >
+                          <Radio value={item.name}>{item.name}</Radio>
+                        </RadioGroup>
+                      </MenuItem>
+                    ))} */}
+                    {availableStylists.map((item, i) => (
+                  <MenuItem key={i}>
+                    <RadioGroup
+                      value={options.stylistN}
+                      onChange={(e) => toggleItem2(e, index)}
+                    >
+                      <Radio value={item.name}>{item.name}</Radio>
+                    </RadioGroup>
+                  </MenuItem>
+                ))}
+                  </MenuList>
+                </>
+              )}
+            </Menu>
+
+            {options.stylistN && (
+              <Box ml={pointertest === 'none' ? 0 : 2} mt={4}>
+                <Tag color="teal.400" size={'lg'}>
+                  {options.stylistN}
+                  <TagCloseButton
+                    onClick={() => toggleItem2('', index)}
+                    display={displayS2}
+                  ></TagCloseButton>
+                </Tag>
+              </Box>
+            )}
+          </Center>
+
+          <Center>
+            <Menu>
+              {({ isOpen }) => (
+                <>
+                  <MenuButton
+                    isActive={isOpen}
+                    as={Button}
+                    rightIcon={isOpen ? <BsCaretUpFill /> : <BsCaretDownFill />}
+                    color={'gray.300'}
+                    bg={bgTest}
+                    pointerEvents={pointertest}
+                    border={'1px solid #464F5E'}
+                    display={displayS2}
+                    mt={4}
+                  >
+                    {isOpen ? 'Close Services' : 'Select Services'}
+                  </MenuButton>
+                  <MenuList maxH={'250px'} overflowY={'scroll'}>
+                    {servicedata.map((item, i) => (
+                      <MenuItem key={i}>
+                        <Checkbox
+                          isChecked={options.service.includes(item.name_service)}
+                          onChange={() => toggleService(item.name_service, index)}
+                          value={item.name_service}
+                        >
+                          {item.name_service}
+                        </Checkbox>
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </>
+              )}
+            </Menu>
+
+            <Grid gap={1} mt={2} templateColumns="repeat(3, 1fr)" ml={pointertest === 'none' ? 0 : 2}>
+              {options.service.map((item) => (
+                <GridItem key={item}>
+                  <Tag size={'lg'} colorScheme={'teal'}>
+                    <TagLabel mr={2}>{item}</TagLabel>
+                    <TagCloseButton onClick={() => toggleService(item, index)} display={displayS2} />
+                  </Tag>
+                </GridItem>
+              ))}
+            </Grid>
+          </Center>
+        </Box>
+      ))}
+
+      <Button colorScheme="yellow" onClick={() => { console.log(selectAptoption) }}>
+        Show
+      </Button>
+
+      <TableContainer>
+        <Table variant='simple'>
+          <Thead>
+            <Tr>
+              <Th>Stylist</Th>
+              <Th>Service</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {selectAptoption
+              .filter((options) => options.stylistN && options.service.length > 0)
+              .map((options, index) => (
+                <React.Fragment key={index}>
+                  {options.service.map((service, serviceIndex) => (
+                    <Tr key={serviceIndex}>
+                      <Td bg={'#121212'}>{options.stylistN}</Td>
+                      <Td bg={'#121212'}>{service}</Td>
+                    </Tr>
+                  ))}
+                </React.Fragment>
+              ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+};
+
+export default YourComponent;
+ 
+ -----------------------------------------------------\\\\\\\\------------------------------------------------------------------------------
+
+ billfile.js 
+
+ // import React from 'react';
+// import { useAppContext } from '../context/AppContext';
+// import { Box, Text, Button } from '@chakra-ui/react';
+
+// export default function Invoicepdf() {
+//   const { selectdData } = useAppContext();
+
+//   console.log(selectdData);
+
+//   return (
+//     <Box>
+//       <Text color={'black'}> Name : {selectdData ? selectdData.name : 'Undefined'}</Text>
+//       <Text color={'black'}> date : {selectdData ? selectdData.date : 'Undefined'}</Text>
+//       <Text color={'black'}>{selectdData ? `Services :${selectdData.services}` : 'Not Available'}</Text>
+//       <Text color={'black'}> Total : {selectdData ? selectdData.total : 'Undefined'}</Text>
+      
+//       {/* Add other fields as needed */}
+//       <Button onClick={window.print}>Print</Button>
+//     </Box>
+//   );
+// }
+
+--------------------------|||||||||-----------------------------------------------------------------------------------
+
+
+
+
+
+import React, { useEffect, useRef, useState } from 'react';
+import { useAppContext } from '../context/AppContext';
+import {
+  ChakraProvider,
+  CSSReset,
+  Box,
+  Flex,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Divider,
+  Button,
+  Center,
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+  
+
+const InvoiceBill = () => {
+  const invoiceRef = useRef(null);
+  const { id } = useParams();
+  console.log('Invoice ID from useParams:', id);
+  const openPrintWindow = () => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Tax Invoice</title></head><body>');
+    printWindow.document.write('<style>body { font-family: "Arial", sans-serif; }</style>');
+    printWindow.document.write('<div style="max-width: 600px; margin: 0 auto; padding: 20px;">');
+    printWindow.document.write(invoiceRef.current.innerHTML);
+    printWindow.document.write('</div></body></html>');
+    printWindow.document.close();
+    printWindow.print();
+    printWindow.onafterprint = () => {
+      printWindow.close();
+    }
+  };
+  const [data , setdata] = useState('');
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`http://localhost/backend/getSpecificInvoicedata.php?appointment_id=${id}`);
+  
+     setdata(response);
+      // Process the data as needed
+      // For example, you can loop through the data and display it
+      // response.data.forEach((record) => {
+      //   console.log(record);
+      //   // Process each record here
+      // });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  useEffect(()=>{
+    fetchData()
+  },[])
+  
+  return (
+    <ChakraProvider>
+      <CSSReset />
+      <Box>
+      <Box
+          ref={invoiceRef}
+        maxW="600px"
+        mx="auto"
+        mt="8"
+        p="6"
+        border="1px solid #2D3748"
+        borderRadius="lg"
+        bg="#F7FAFC"  // Light background color
+        color="#2D3748" 
+        boxShadow="lg"
+      >
+        <Flex justify="space-between" mb="4">
+          <Heading fontSize="xl">Tax Invoice</Heading>
+          <Text>Date: 2023-12-01</Text>
+        </Flex>
+        <VStack spacing="4" align="start">
+          <Box>
+            <Text fontSize="lg" fontWeight="bold">
+              Bill To:
+            </Text>
+            <Text>Name :  </Text>
+            <Text>date </Text>
+            <Text>City, Country: Anytown, USA</Text>
+          </Box>
+          <Divider borderColor="#4A5568" />
+          <Box>
+            <Text fontSize="lg" fontWeight="bold">
+              Ship To:
+            </Text>
+            <Text>
+              Same as Bill To or Shipping Address if different
+            </Text>
+          </Box>
+          <Divider borderColor="#4A5568" />
+          <Box>
+            <Text fontSize="lg" fontWeight="bold">
+              Items:
+            </Text>
+            <HStack spacing="8">
+              <VStack align="start">
+                <Text>Product 1</Text>
+                <Text>Product 2</Text>
+              </VStack>
+              <VStack align="start">
+                <Text>2</Text>
+                <Text>1</Text>
+              </VStack>
+              <VStack align="start">
+                <Text>$20.00</Text>
+                <Text>$30.00</Text>
+              </VStack>
+              <VStack align="start">
+                <Text>$40.00</Text>
+                <Text>$30.00</Text>
+              </VStack>
+            </HStack>
+          </Box>
+          <Divider borderColor="#4A5568" />
+          <Box>
+            <Text fontSize="lg" fontWeight="bold">
+              Payment Information:
+            </Text>
+            <Text>Payment Due Date: 2023-12-15</Text>
+            <Text>Payment Method: Credit Card</Text>
+          </Box>
+          <Divider borderColor="#4A5568" />
+          <Box>
+            <Text fontSize="lg" fontWeight="bold">
+              Contact Information:
+            </Text>
+            <Text>Email: info@yourcompany.com</Text>
+            <Text>Phone: +1 (555) 123-4567</Text>
+          </Box>
+        </VStack>
+        
+      </Box>
+      </Box>
+      <Center>
+      <Button
+        mt="4"
+        bg="#4CAF50"
+        color="white"
+        _hover={{ bg: '#45a049' }}
+        onClick={openPrintWindow}
+
+      >
+        Print Invoice
+      </Button>
+      </Center>
+    </ChakraProvider>
+  );
+};
+
+export default InvoiceBill;
+
+----------------------------------\\\\\\\\\\\\\------------------------------------
+
+
+// 'use client'
+
+// import {
+//   Flex,
+//   Box,
+//   FormControl,
+//   FormLabel,
+//   Input,
+//   InputGroup,
+//   HStack,
+//   InputRightElement,
+//   Stack,
+//   Button,
+//   Heading,
+//   Text,
+//   useColorModeValue,
+//   Link,
+// } from '@chakra-ui/react'
+// import axios from 'axios';
+// import { useState } from 'react'
+// // import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
+// import {BsFillSendPlusFill} from'react-icons/bs'
+
+// export default function AddEmployee() {
+//   // const [showPassword, setShowPassword] = useState(false)
+//   const [loading , setLoading] =useState(false);
+//   // function handleDataEmployee(){
+//   //    setLoading(true);
+//   //   //  setLoading(false);
+
+
+//   // }
+//   const [employeeData, setEmployeeData] = useState({
+//     Ename,
+//     dob,
+//     phoneNumber,
+//     experience,
+//   });
+
+//   const handleDataEmployee = () => {
+//     setLoading(true);
+//      console.log(employeeData);
+//     axios.post("http://localhost/backend/addEmployee.php", employeeData)
+//       .then((response) => {
+//         console.log(response.data); // Display the response message from the PHP script
+//         setLoading(false);
+//       })
+//       .catch((error) => {
+//         console.error(error);
+//         setLoading(false);
+//       });
+//   };
+
+//   const handleChange = (e) => {
+//     setEmployeeData({ ...employeeData, [e.target.name]: e.target.value });
+//   };
+
+//   return (
+//     <Flex
+//       minH={'92vh'}
+//       align={'center'}
+//       justify={'center'}
+//       bg={'white'}
+//       // border={'1px solid red'}
+//       mt={0}>
+//       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={0} px={0}>
+//         <Stack align={'center'}>
+//           <Heading fontSize={'4xl'} textAlign={'center'}
+//              color={'black'}>
+//             Add an Employee
+//           </Heading>
+//           <Text fontSize={'lg'} color={'gray.600'}>
+//             Sumbmit data in given form ✌️
+//           </Text>
+//         </Stack>
+//         <Box
+//           rounded={'lg'}
+//           bg={'whitesmoke'}
+//           boxShadow={'lg'}
+//           p={8}>
+//           <Stack spacing={4}>
+//             <HStack>
+//               <Box>
+//                 <FormControl id="firstName" isRequired>
+//                   <FormLabel color={'gray'}>Name</FormLabel>
+//                   <Input type="text" 
+//                    border={'1px solid gray'}
+//                     color={'black'}
+//                     focusBorderColor={'black'}
+//                     _hover={{border:'1px solid '}}
+//                     onChange={handleChange}/>
+//                 </FormControl>
+//               </Box>
+//               <Box>
+//                 <FormControl id="lastName" isRequired>
+//                   <FormLabel color={'gray'} 
+//                    >DOB </FormLabel>
+//                   <Input type="number" 
+//                     border={'1px solid gray'}
+//                     color={'black'}placeholder='YYYY-MM-DD' 
+//                     _placeholder={{ opacity:0.4, color: 'black' }}
+//                     focusBorderColor={'black'}
+//                     _hover={{border:'1px solid '}}
+//                     onChange={handleChange}/>
+//                 </FormControl>
+//               </Box>
+//             </HStack>
+//             <FormControl id="email" isRequired>
+//               <FormLabel color={'gray'}>Phone Number</FormLabel>
+//               <Input type="number" color={'black'}  border={'1px solid gray'}
+//                       focusBorderColor={'black'}
+//                       _hover={{border:'1px solid '}}
+//                       onChange={handleChange}/>
+//             </FormControl>
+//             <FormControl id="experience" isRequired>
+//               <FormLabel color={'gray'}>Experience</FormLabel>
+//                 <Input type='number' 
+//                       focusBorderColor={'black'}
+//                       _hover={{border:'1px solid '}}color={'black'} 
+//                       onChange={handleChange}
+//                       border={'1px solid gray'} placeholder='Experience (No.of Years)'/>
+//             </FormControl>
+//             <Stack spacing={10} pt={2}>
+//               <Button
+//                 loadingText="Adding"
+//                 size="lg"
+//                 bg={'black'}
+//                 color={'white'}
+//                 _hover={{
+//                   //  color:'',
+//                    bg:'gray.600'
+//                 }}
+//                 transition={'ease-in 0.1s'}
+//                 isLoading={loading}
+//                 onClick={handleDataEmployee}>
+//                 Save&nbsp;&nbsp;<BsFillSendPlusFill/>
+//               </Button>
+//             </Stack>
+//             <Stack pt={6}>
+//               {/* <Text align={'center'}>
+//                 Already a user? <Link color={'blue.400'}>Login</Link>
+//               </Text> */}
+//             </Stack>
+//           </Stack>
+//         </Box>
+//       </Stack>
+//     </Flex>
+//   )
+// }
+
+import {
+  Flex,
+  Box,
+  FormControl,
+  FormLabel,
+  Input,
+  HStack,
+  Stack,
+  Button,
+  Heading,
+  Text,
+  useColorModeValue,
+  useToast,
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useState } from 'react';
+import { BsFillSendPlusFill } from 'react-icons/bs';
+
+export default function AddEmployee() {
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+  const [disabled , setDisabled] = useState(true);
+
+
+  // Define the initial state for employee data
+  const [employeeData, setEmployeeData] = useState({
+    name: '',
+    dob: '',
+    phoneNumber: '',
+    experience: '',
+  });
+
+  const handleDataEmployee = () => {
+    setLoading(true);
+
+    // Send the data as an object
+    axios.post('http://localhost/backend/addEmployee.php', employeeData)
+      .then((response) => {
+        // console.log(response.data); // Display the response message from the PHP script
+        toast({
+          containerStyle: {
+            zIndex:999999999
+          },
+          position: 'top',
+          title: 'Data Added.',
+          description: "Employee Data added to Database",
+          status: 'success',
+          duration: 9000,
+          isClosable: true,
+        })
+        setLoading(false);
+
+        setEmployeeData({
+          name: '',
+          dob: '',
+          phoneNumber: '',
+          experience: '',
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        setLoading(false);
+      });
+  };
+
+  const handleChange = (e) => {
+    // Update the employeeData state with the input values
+    setEmployeeData({
+      ...employeeData,
+      [e.target.name]: e.target.value,
+    });
+    const isFilled = Object.values(employeeData).every((value) => value.trim() !== '');
+    setDisabled(!isFilled);
+  
+  };
+ 
+
+  return (
+    <Flex minH={'92vh'} align={'center'} justify={'center'} bg={'white'} mt={0}>
+      <Stack spacing={8} mx={'auto'} maxW={'lg'} py={0} px={0}>
+        <Stack align={'center'}>
+          <Heading fontSize={'4xl'} textAlign={'center'} color={'black'}>
+            Add an Employee
+          </Heading>
+          <Text fontSize={'lg'} color={'gray.600'}>
+            Submit data in the given form ✌️
+          </Text>
+        </Stack>
+        <Box rounded={'lg'} bg={'whitesmoke'} boxShadow={'lg'} p={8}>
+          <Stack spacing={4}>
+            <HStack>
+            <FormControl id="name" isRequired>
+              <FormLabel color={'gray'}>Name</FormLabel>
+              <Input
+                type="text"
+                border={'1px solid gray'}
+                color={'black'}
+                focusBorderColor={'black'}
+                _hover={{ border: '1px solid ' }}
+                onChange={handleChange}
+                name="name"
+                value={employeeData.name}
+              />
+            </FormControl>
+
+            <FormControl id="dob" isRequired>
+              <FormLabel color={'gray'}>DOB</FormLabel>
+              <Input
+                type="text"
+                border={'1px solid gray'}
+                color={'black'}
+                placeholder="YYYY-MM-DD"
+                _placeholder={{ opacity: 0.4, color: 'black' }}
+                focusBorderColor={'black'}
+                _hover={{ border: '1px solid ' }}
+                onChange={handleChange}
+                name="dob"
+                value={employeeData.dob}
+              />
+            </FormControl>
+            </HStack>
+            <FormControl id="phoneNumber" isRequired>
+              <FormLabel color={'gray'}>Phone Number</FormLabel>
+              <Input
+                type="number"
+                color={'black'}
+                border={'1px solid gray'}
+                focusBorderColor={'black'}
+                _hover={{ border: '1px solid ' }}
+                onChange={handleChange}
+                name="phoneNumber"
+                value={employeeData.phoneNumber}
+              />
+            </FormControl>
+
+            <FormControl id="experience" isRequired>
+              <FormLabel color={'gray'}>Experience</FormLabel>
+              <Input
+                type="number"
+                focusBorderColor={'black'}
+                _hover={{ border: '1px solid ' }}
+                color={'black'}
+                border={'1px solid gray'}
+                placeholder="Experience (No.of Years)"
+                onChange={handleChange}
+                name="experience"
+                value={employeeData.experience}
+              />
+            </FormControl>
+
+            <Stack spacing={10} pt={2}>
+              <Button
+                loadingText="Adding"
+                size="lg"
+                bg={'black'}
+                color={'white'}
+                _hover={{
+                  // color:'',
+                  bg: 'gray.600',
+                }}
+                transition={'ease-in 0.1s'}
+                isLoading={loading}
+                onClick={handleDataEmployee}
+                isDisabled={disabled}
+              >
+                Save&nbsp;&nbsp;<BsFillSendPlusFill />
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
+      </Stack>
+    </Flex>
+  );
+}
+/////////////////////////////////////////
+// import React, { useRef } from 'react';
+// import {
+//   ChakraProvider,
+//   CSSReset,
+//   Box,
+//   Flex,
+//   Heading,
+//   Text,
+//   VStack,
+//   HStack,
+//   Divider,
+//   Button,
+//   Center,
+// } from '@chakra-ui/react';
+  
+
+// const TaxInvoice = () => {
+//   const invoiceRef = useRef(null);
+
+//   const openPrintWindow = () => {
+//     const printWindow = window.open('', '_blank');
+//     printWindow.document.write('<html><head><title>Tax Invoice</title></head><body>');
+//     printWindow.document.write('<style>body { font-family: "Arial", sans-serif; }</style>');
+//     printWindow.document.write('<div style="max-width: 600px; margin: 0 auto; padding: 20px;">');
+//     printWindow.document.write(invoiceRef.current.innerHTML);
+//     printWindow.document.write('</div></body></html>');
+//     printWindow.document.close();
+//     printWindow.print();
+//     printWindow.onafterprint = () => {
+//       printWindow.close();
+//     }
+//   };
+//   return (
+//     <ChakraProvider>
+//       <CSSReset />
+//       <Box>
+//       <Box
+//           ref={invoiceRef}
+//         maxW="600px"
+//         mx="auto"
+//         mt="8"
+//         p="6"
+//         border="1px solid #2D3748"
+//         borderRadius="lg"
+//         bg="#F7FAFC"  // Light background color
+//         color="#2D3748" 
+//         boxShadow="lg"
+//       >
+//         <Flex justify="space-between" mb="4">
+//           <Heading fontSize="xl">Tax Invoice</Heading>
+//           <Text>Date: 2023-12-01</Text>
+//         </Flex>
+//         <VStack spacing="4" align="start">
+//           <Box>
+//             <Text fontSize="lg" fontWeight="bold">
+//               Bill To:
+//             </Text>
+//             <Text>Customer Name: John Doe</Text>
+//             <Text>Address: 123 Main Street</Text>
+//             <Text>City, Country: Anytown, USA</Text>
+//           </Box>
+//           <Divider borderColor="#4A5568" />
+//           <Box>
+//             <Text fontSize="lg" fontWeight="bold">
+//               Ship To:
+//             </Text>
+//             <Text>
+//               Same as Bill To or Shipping Address if different
+//             </Text>
+//           </Box>
+//           <Divider borderColor="#4A5568" />
+//           <Box>
+//             <Text fontSize="lg" fontWeight="bold">
+//               Items:
+//             </Text>
+//             <HStack spacing="8">
+//               <VStack align="start">
+//                 <Text>Product 1</Text>
+//                 <Text>Product 2</Text>
+//               </VStack>
+//               <VStack align="start">
+//                 <Text>2</Text>
+//                 <Text>1</Text>
+//               </VStack>
+//               <VStack align="start">
+//                 <Text>$20.00</Text>
+//                 <Text>$30.00</Text>
+//               </VStack>
+//               <VStack align="start">
+//                 <Text>$40.00</Text>
+//                 <Text>$30.00</Text>
+//               </VStack>
+//             </HStack>
+//           </Box>
+//           <Divider borderColor="#4A5568" />
+//           <Box>
+//             <Text fontSize="lg" fontWeight="bold">
+//               Payment Information:
+//             </Text>
+//             <Text>Payment Due Date: 2023-12-15</Text>
+//             <Text>Payment Method: Credit Card</Text>
+//           </Box>
+//           <Divider borderColor="#4A5568" />
+//           <Box>
+//             <Text fontSize="lg" fontWeight="bold">
+//               Contact Information:
+//             </Text>
+//             <Text>Email: info@yourcompany.com</Text>
+//             <Text>Phone: +1 (555) 123-4567</Text>
+//           </Box>
+//         </VStack>
+        
+//       </Box>
+//       </Box>
+//       <Center>
+//       <Button
+//         mt="4"
+//         bg="#4CAF50"
+//         color="white"
+//         _hover={{ bg: '#45a049' }}
+//         onClick={openPrintWindow}
+
+//       >
+//         Print Invoice
+//       </Button>
+//       </Center>
+//     </ChakraProvider>
+//   );
+// };
+
+// export default TaxInvoice;
+// App.js
