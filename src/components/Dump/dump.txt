@@ -999,3 +999,27 @@ export default function AddEmployee() {
 
 // export default TaxInvoice;
 // App.js
+----------------------------------------------
+// const handleCheckboxChange = (serviceName) => {
+  //   if(!value.radioValue){
+  //     setalert('2px solid red');
+  //     toast({
+  //       position:'top',
+  //       status:'warning',
+  //       title:'Please select stylist first'
+  //     })
+  //     return;
+  //   }
+  //   if (selectedServices.includes(serviceName)) {
+  //     setSelectedServices((prevSelected) =>
+  //       prevSelected.filter((service) => service !== serviceName)
+  //     );
+  //   } else {
+  //     setSelectedServices((prevSelected) => [...prevSelected, serviceName]);
+  //   }
+  // };
+  // const handleRemoveService = (serviceName) => {
+  //   setSelectedServices((prevSelected) =>
+  //     prevSelected.filter((service) => service !== serviceName)
+  //   );
+  // };

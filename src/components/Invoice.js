@@ -28,8 +28,10 @@ import {
   Textarea,
   Th,
   Thead,
+  Toast,
   Tr,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { SlCalender } from "react-icons/sl";
@@ -50,21 +52,7 @@ export default function Invoice() {
   // console.log(location.pathname);
   const dbpath1 = "http://localhost/backend/";
   const [servicedata, setServiceData] = useState([]);
-  const [selectedServices, setSelectedServices] = useState([]);
-  const handleCheckboxChange = (serviceName) => {
-    if (selectedServices.includes(serviceName)) {
-      setSelectedServices((prevSelected) =>
-        prevSelected.filter((service) => service !== serviceName)
-      );
-    } else {
-      setSelectedServices((prevSelected) => [...prevSelected, serviceName]);
-    }
-  };
-  const handleRemoveService = (serviceName) => {
-    setSelectedServices((prevSelected) =>
-      prevSelected.filter((service) => service !== serviceName)
-    );
-  };
+  
   const [selectedType, setSelectedType] = useState("perc");
   const [percentageValue, setPercentageValue] = useState("");
   const [flatValue, setFlatValue] = useState("");
@@ -75,15 +63,6 @@ export default function Invoice() {
     setPercentageValue("");
   };
 
-  // const handleInputChange = (e) => {
-  //   const inputValue = e.target.value;
-
-  //   if (selectedType === "perc") {
-  //     setPercentageValue(inputValue);
-  //   } else {
-  //     setFlatValue(inputValue);
-  //   }
-  // };
   const loadServiceData = async () => {
     try {
       const response = await axios.get(dbpath1 + "getServicedata.php");
@@ -270,7 +249,7 @@ export default function Invoice() {
   // console.log(Edata);
   const [isEditing, setIsEditing] = useState(false);
   const [editedValue, setEditedValue] = useState("");
-  const [editedService, setEditedService] = useState(null);
+  const [editedService, setEditedService] = useState('');
 
   const handleDoubleClick = (serviceName) => {
     setIsEditing(true);
@@ -297,13 +276,64 @@ export default function Invoice() {
     setEditedService(null);
   };
   //
-  const [radio, setRadio] = useState("");
+  const [value, setValue] = useState({ radioValue: '', checkboxesValue: [] });
+  const [alert , setalert] =useState('1px solid gray')
+  const [arrayOfObjects, setArrayOfObjects] = useState([]);
 
-  const handleRadioClick = (value) => {
-    setRadio(value);
+  const handleTagCloseClick = () => {
+    setValue({ radioValue: '', checkboxesValue: [] });
+    setalert('1px solid gray');
   };
-  console.log(radio);
+  const handleRadioChange = (value) => {
+    setValue({ radioValue: value, checkboxesValue: [] });
+    setalert('1px solid gray');
+  };
+  const toast = useToast();
+  const [selectedServices, setSelectedServices] = useState([]);
+  
+  const handleCheckboxChange = (checkboxValue) => {
+    if (!value.radioValue) {
+      setalert('2px solid red');
+      toast({
+        position:'top',
+        status:'warning',
+        title:'Please select stylist first'
+      })
+      return;
+    }
 
+    // Check if the checkbox is already checked
+    if (value.checkboxesValue.includes(checkboxValue)) {
+      // If checked, remove the checkbox value from the state
+      setValue((prevValue) => ({
+        ...prevValue,
+        checkboxesValue: prevValue.checkboxesValue.filter((value) => value !== checkboxValue),
+      }));
+
+      // Also remove the corresponding object from the array
+      setArrayOfObjects((prevArray) =>
+        prevArray.filter((obj) => !(obj.radioValue === value.radioValue && obj.checkboxValue === checkboxValue))
+      );
+    } else {
+      // If not checked, add the checkbox value to the state
+      setValue((prevValue) => ({
+        ...prevValue,
+        checkboxesValue: [...prevValue.checkboxesValue, checkboxValue],
+      }));
+
+      // Create a new object for the selected radio value and checkbox value
+      const selectedObject = {
+        radioValue: value.radioValue,
+        checkboxValue: checkboxValue,
+      };
+
+      // Add the new object to the array
+      setArrayOfObjects((prevArray) => [...prevArray, selectedObject]);
+    }
+  }
+  console.log(isEditing);
+  console.log(editedService);
+  console.log(arrayOfObjects);
   return (
     <>
       <Box
@@ -391,7 +421,7 @@ export default function Invoice() {
                 top={"25%"}
                 zIndex={9}
                 transition={"ease-in 2s"}
-                maxH={"90%"}
+                maxH={"25vh"}
                 pos={"absolute"}
                 overflowY={"scroll"}
                 display={search == "" ? "none" : display3}
@@ -468,10 +498,10 @@ export default function Invoice() {
                   <Th>Action</Th>
                 </Tr>
               </Thead>
-              <Tbody border={"2px dashed gray"}>
+              <Tbody border={"2px dashed gray"} textAlign={'center'}>
                 {/* Your table rows go here */}
                 {/* {console.log(selectedServices)} */}
-                {selectedServices.map((Service, index) => {
+                {/* {selectedServices.map((Service, index) => {
                   const serviceData = servicedata.find(
                     (data) => data.name_service === Service
                   );
@@ -491,24 +521,41 @@ export default function Invoice() {
                     const prevInitialTotal = Number(serviceData.price);
                     totalFinal = prevInitialTotal + totalFinal;
 
-                    return (
-                      <React.Fragment key={index}>
+                    return ( */}
+                      <React.Fragment >
+                      {arrayOfObjects.map((obj, index) => {
+                        const serviceData = servicedata.find(
+                          (data) => data.name_service === obj.checkboxValue
+                        );
+      
+                        if (serviceData) {
+                          const InitialTotal =
+                            selectedType === "perc"
+                              ? serviceData.price -
+                                (serviceData.price * percentageValue) / 100
+                              : serviceData.price - flatValue;
+      
+                          totalFinal2 = InitialTotal + totalFinal2;
+                          const prevInitialTotal = Number(serviceData.price);
+                          totalFinal = prevInitialTotal + totalFinal;
+                      return(
                         <Tr
                           fontSize={"small"}
                           color={"black"}
                           textAlign={"center"}
+                          key={index}
                         >
                           <Td>
-                            {stylist.map((i) => (
-                              <>{stylistForService ? i.split("-")[0] : ""}</>
-                            ))}
+                            {obj.radioValue}
                           </Td>
-                          <Td>{Service}</Td>
-                          <Td>1</Td>
-                          <Td>{prevInitialTotal}</Td>
+                          <Td>{obj.checkboxValue}</Td>
+                          <Td textAlign={'center'}>1</Td>
+                          <Td>
+                            {"₹" + InitialTotal}
+                          </Td>
 
-                          <Td onDoubleClick={() => handleDoubleClick(Service)}>
-                            {isEditing && editedService === Service ? (
+                          <Td onDoubleClick={() => handleDoubleClick(obj.checkboxeValue)} cursor={'pointer'}>
+                            {isEditing ?  (
                               <Input
                                 type="number"
                                 value={editedValue}
@@ -532,23 +579,24 @@ export default function Invoice() {
                               </>
                             )}
                           </Td>
-                          <Td>{"₹" + InitialTotal}</Td>
+                          <Td>{"₹" + 100}</Td>
                           <Td>
                             <IconButton
                               variant={"outline"}
                               isRound
                               colorScheme="red"
                               icon={<IoClose />}
-                              onClick={() => handleRemoveService(Service)}
+                              // onClick={() => handleRemoveService(Service)}
                             />
                           </Td>
                         </Tr>
+)}})}
                       </React.Fragment>
-                    );
+                    {/* );
                   }
 
                   return null; // If serviceData is undefined, skip rendering this fragment
-                })}
+                })} */}
               </Tbody>
             </Table>
           </Box>
@@ -574,11 +622,11 @@ export default function Invoice() {
                   as={Button}
                   color={"black"}
                   variant={"outline"}
-                  border={"2px solid red"}
+                  border={alert}
                   rightIcon={<FaSort />}
                   ml={4}
                   m={3}
-                  aria-required
+                  transition={'ease-in 0.3s'}
                   _after={{
                     position: "absolute",
                     left: "100%",
@@ -592,13 +640,14 @@ export default function Invoice() {
                   Stylist
                 </MenuButton>
                 <MenuList maxH={"30dvh"} overflow={"auto"}>
-                  <RadioGroup>
+                  <RadioGroup value={value.radioValue} onChange={(value) => handleRadioChange(value)}>
                     {Edata.map((i, key) => (
                       <MenuItem
                         index={key}
-                        onClick={() => {
-                          handleRadioClick(i.name);
-                        }}
+                        // onClick={() => {
+                        //   handleRadioClick(i.name);
+                        // }}
+                        // value={i.name}
                       >
                         <Radio value={i.name}>{i.name}</Radio>
                       </MenuItem>
@@ -620,12 +669,12 @@ export default function Invoice() {
                 color={"#121212"}
               />
               <Box
-                border={"1px solid red"}
+                // border={"1px solid red"}
                 w={"fit-content"}
                 ml={3}
-                display={radio == "" ? "none" : "block"}
+                display={value.radioValue == "" ? "none" : "block"}
               >
-                <Tag color={"teal"}>{radio}</Tag>
+                <Tag color={"teal"} p={3} bg={'gray.200'}>{value.radioValue}<TagCloseButton onClick={handleTagCloseClick}/></Tag>
               </Box>
               <Box textAlign={"left"} display={"felx"}>
                 <VStack
@@ -643,12 +692,14 @@ export default function Invoice() {
                         <Checkbox
                           value={item.name_service}
                           border={"gray"}
-                          isChecked={selectedServices.includes(
-                            item.name_service
-                          )}
-                          onChange={() =>
-                            handleCheckboxChange(item.name_service)
-                          }
+                          // isChecked={selectedServices.includes(
+                          //   item.name_service
+                          // )}
+                          // onChange={() =>
+                          //   handleCheckboxChange(item.name_service)
+                          // }
+                          isChecked={value.checkboxesValue.includes(item.name_service)}
+        onChange={() => handleCheckboxChange(item.name_service)}
                         ></Checkbox>
                       </Box>
                     </Box>
