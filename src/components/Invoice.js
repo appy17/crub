@@ -574,7 +574,7 @@ export default function Invoice() {
                   as={Button}
                   color={"black"}
                   variant={"outline"}
-                  border={"2px solid teal"}
+                  border={"2px solid red"}
                   rightIcon={<FaSort />}
                   ml={4}
                   m={3}
@@ -585,7 +585,7 @@ export default function Invoice() {
                     bottom: "75%",
                     content: '"*"',
                     fontSize: "15px",
-                    color: "teal",
+                    color: "red",
                     fontWeight: "bold",
                   }}
                 >
