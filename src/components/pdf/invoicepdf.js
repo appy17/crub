@@ -20,6 +20,7 @@ import {
   Td,
   TableCaption,
   TableContainer,
+  Tag,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
@@ -42,25 +43,25 @@ const InvoiceBill = () => {
     }
   };
   
-  const openPrintWindow = () => {
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(
-      "<html><head><title>Tax Invoice</title></head><body>"
-    );
-    printWindow.document.write(
-      '<style>body { font-family: "Arial", sans-serif; }</style>'
-    );
-    printWindow.document.write(
-      '<div style="max-width: 600px; margin: 0 auto; padding: 20px;">'
-    );
-    printWindow.document.write(invoiceRef.current.innerHTML);
-    printWindow.document.write("</div></body></html>");
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.onafterprint = () => {
-      printWindow.close();
-    };
-  };
+  // const openPrintWindow = () => {
+  //   const printWindow = window.open("", "_blank");
+  //   printWindow.document.write(
+  //     "<html><head><title>Tax Invoice</title></head><body>"
+  //   );
+  //   printWindow.document.write(
+  //     '<style>body { font-family: "Arial", sans-serif; }</style>'
+  //   );
+  //   printWindow.document.write(
+  //     '<div style="max-width: 600px; margin: 0 auto; padding: 20px;">'
+  //   );
+  //   printWindow.document.write(invoiceRef.current.innerHTML);
+  //   printWindow.document.write("</div></body></html>");
+  //   printWindow.document.close();
+  //   printWindow.print();
+  //   printWindow.onafterprint = () => {
+  //     printWindow.close();
+  //   };
+  // };
   const fetchData = async () => {
     try {
       const response = await axios.get(
@@ -76,7 +77,7 @@ const InvoiceBill = () => {
     fetchData();
   }, [id]); // Fetch data whenever ID changes
   // const arratServices = []
-  console.log(data);
+  console.log(data.service_details);
 
   // const Services = [...data.Services];
   return (
@@ -129,9 +130,9 @@ const InvoiceBill = () => {
                   Invoice To,
                 </Text>
                 <Text fontSize={"xl"} fontWeight={"semibold"}>
-                  {data.Client_Name}
+                  {data.client_name}
                 </Text>
-                <Text color={"gray.700"}>{data.Client_Number}</Text>
+                <Text color={"gray.700"}>{data.client_number}</Text>
                 <Text>Nagpur , India</Text>
               </Box>
               <Box ml={"auto"} mr={10}>
@@ -147,7 +148,7 @@ const InvoiceBill = () => {
                     fontSize={"md"}
                     color={"#121212"}
                   >
-                    &nbsp;{"#" + data.Invoice_ID}{" "}
+                    &nbsp;{"#" + data.invoice_id}{" "}
                   </Text>{" "}
                 </Text>
                 <Text
@@ -166,7 +167,7 @@ const InvoiceBill = () => {
                     color={"black"}
                   >
                     <CiCalendarDate style={{ fontSize: "20px" }} />
-                    {data.Date}
+                    {data.date}
                   </Text>
                 </Text>
               </Box>
@@ -186,10 +187,10 @@ const InvoiceBill = () => {
                   </Tr>
                 </Thead>
                 <Tbody>
-                {Array.isArray(data.Services) && data.Services.length > 0 ? (
-    data.Services.map((service, index) => (
+                {Array.isArray(data.service_details) && data.service_details.length > 0 ? (
+    data.service_details.map((service, index) => (
       <Tr key={index}>
-        <Td fontFamily={'mono'} textAlign={'center'}>{service.toUpperCase()} <Text color={'gray'} fontSize={'x-small'}>by [stylist]</Text></Td>
+        <Td fontFamily={'mono'} textAlign={'center'}>{service.checkboxValue} <Text color={'gray'} fontSize={'x-small'}>by {service.radioValue}</Text></Td>
         <Td textAlign={'center'}>1</Td>
         <Td textAlign={'center'}>[price]</Td>
       </Tr>
@@ -203,9 +204,9 @@ const InvoiceBill = () => {
                 <Tfoot>
                   <Tr>
                     <Th></Th>
-                    <Th>Discount : {"₹" + Number(data.Discount_Price)} </Th>
+                    <Th>Discount : {"₹" + Number(data.discount_price)} </Th>
                     <Th fontSize={"large"} bg={"#121212"} color={"teal.100"}>
-                      Total : {"₹" + Number(data.Total_Price)}
+                      Total : {"₹" + Number(data.total_price)}
                     </Th>
                   </Tr>
                 </Tfoot>
@@ -227,7 +228,17 @@ const InvoiceBill = () => {
             </Box>
           </VStack>
         </Box>
-        <Box flex={"40%"} borderLeft={"1px solid green"}>
+        <Box flex={"40%"} >
+          <Box borderBottom={'1px solid black'} h={'50dvh'} mt={2}>
+             <VStack>
+              <Text color={'black'} fontFamily={'monospace'} fontSize={'md'} p={1}
+               borderBottom={'2px dashed black'}>Miscellaneous</Text>
+               <Text color={'black'}>Payment Type : {data.payment_type}</Text>
+               <Tag color={'teal'} p={3}>Paid :{Number(data.paid_amount)}</Tag>
+               <Tag color={'red.500'} p={3}>Balance :{Number(data.balance)}</Tag>
+
+             </VStack>
+          </Box>
           <Center>
             <Button
               mt="4"

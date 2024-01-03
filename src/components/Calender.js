@@ -937,7 +937,7 @@ useEffect(()=>{
   };
   const { updateClientData, updateServiceData, updateSelectedDate , updateSelectedid ,  updateStylist } =
     useAppContext();
-
+const [align , setalign] = useState(false);
   return (
     <Box p={4}>
       <Heading
@@ -1861,7 +1861,7 @@ useEffect(()=>{
               // const servicesData = item.appointment_option.map(obj => Object.values(obj)[0].service).flat();
               const servicesData = item.appointment_option.map((option) => {
                 // Assuming each option has a property named 'service'
-                return option.service + '&' + option.stylistN; 
+                return   option.stylistN +" | " + option.service ; 
               
               }).flat()
               const stylist = item.appointment_option.map((i) => {
@@ -1873,7 +1873,7 @@ useEffect(()=>{
                 (option) => option.status === "done"
               );
               // const invId = invoiceD != null ? invoiceD.map((i) => i.Apt_ID) : '';
-              const invId = Array.isArray(invoiceD) ? invoiceD.map((i) => i.Apt_ID) : '';
+              const invId = Array.isArray(invoiceD) ? invoiceD.map((i) => i.apt_id) : '';
 
               const APTidArray = [...invId];
               const isInvoiceDone = APTidArray.includes(item.id);
@@ -1900,7 +1900,7 @@ useEffect(()=>{
                     updateClientData(item.client.split("|")[1]);
                     updateSelectedDate(formattedDate);
                     updateSelectedid(item.id);
-                    updateStylist(stylist); 
+                    // updateStylist(stylist); 
                   }}
                 >
                   Generate Bill

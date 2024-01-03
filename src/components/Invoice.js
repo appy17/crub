@@ -52,7 +52,7 @@ export default function Invoice() {
   // console.log(location.pathname);
   const dbpath1 = "http://localhost/backend/";
   const [servicedata, setServiceData] = useState([]);
-  
+
   const [selectedType, setSelectedType] = useState("perc");
   const [percentageValue, setPercentageValue] = useState("");
   const [flatValue, setFlatValue] = useState("");
@@ -114,7 +114,10 @@ export default function Invoice() {
   };
   useEffect(() => {
     filterClient();
+    // console.log(search)
   }, [search]);
+  // console.log(search)
+
   const handleSuggestionClick = (name, number) => {
     // Handle suggestion click, set the selected client, and clear suggestions
     setSuggestions([]);
@@ -134,12 +137,23 @@ export default function Invoice() {
     "UPI",
     "Cheque",
   ];
+  // const [totalPrice , settotalPrice] = useState(0);
+  // const [totalPrice2 , settotalPrice2] = useState(0);
   const handleItemClick = (item) => {
     setService(item);
+    // setpaid(totalFinal2);
+    setbalance(totalFinal2 - paid);
+    
+    // settotalPrice(totalFinal);
+    // settotalPrice2(totalFinal2);
   };
   let totalFinal = 0;
   let totalFinal2 = 0;
+  
+
   // let gst = (totalFinal2*9)/100;
+  const [paid , setpaid] = useState(0);
+  const [balance , setbalance] = useState(0);
   const {
     clientData,
     serviceDatas,
@@ -148,7 +162,15 @@ export default function Invoice() {
     selectdId,
     stylist,
   } = useAppContext();
-  // console.log(stylist);
+  // console.log(serviceDatas);
+  // let stylist1 = [serviceDatas.split('|')[0] , serviceDatas.split('|')[1]];
+  // console.log(stylist1);
+  // serviceDatas.split()
+  // let stylistx  = serviceDatas.split('|')[0];
+  // let stylisty  = serviceDatas.split('|')[1];
+  // console.log(stylistx);
+  // console.log(stylisty);
+
   useEffect(() => {
     // Fetch data or perform any other actions based on clientData and serviceData
     // console.log("Client Data in Invoice:", clientData);
@@ -166,30 +188,6 @@ export default function Invoice() {
   const Fclientname = Clientdata.find(
     (data) => Number(data.mobile_number) === Number(clientData)
   );
-  // useEffect(() => {
-  //   // Calculate the total based on selected services
-  //   let total = 0;
-  //   let total2 = 0;
-
-  //   selectedServices.forEach((serviceName) => {
-  //     const serviceData = serviceDatas.find(
-  //       (data) => data.name_service === serviceName
-  //     );
-
-  //     if (serviceData) {
-  //       const initialTotal =
-  //         selectedType === "perc"
-  //           ? serviceData.price - (serviceData.price * percentageValue) / 100
-  //           : serviceData.price - flatValue;
-
-  //       total2 = initialTotal + total2;
-  //       total = Number(serviceData.price) + total;
-  //     }
-  //   });
-
-  //   setTotalFinal(total);
-  //   setTotalFinal2(total2);
-  // }, [selectedServices, selectedType, percentageValue, flatValue, serviceDatas]);
 
   const Datapost =
     clientData === ""
@@ -200,6 +198,7 @@ export default function Invoice() {
   {
     // console.log(selectData);
   }
+  // const toast = useToast();
   const insertData = async () => {
     const invoice_data = {
       aptId: selectdId,
@@ -213,18 +212,24 @@ export default function Invoice() {
           : (Fclientname && Fclientname.name) || "Client Not Found",
       clientNumber: clientData !== "" ? clientData : search,
       date: selectedDate,
-      stylistName: "your_stylist_name", // Replace with actual stylist name
-      services: JSON.stringify(selectedServices),
+      // stylistName: "your_stylist_name", // Replace with actual stylist name
+      services: JSON.stringify(arrayOfObjects),
       type: selectedType,
       totalPrice: totalFinal2,
       discountPrice: totalFinal - totalFinal2,
       paymentType: service,
+      paid : paid,
+      balance : balance
     };
     axios
       .post("http://localhost/backend/addInvoice.php", invoice_data)
       .then((response) => {
         console.log("Data created:", response.data);
-
+         toast({
+          position:'top-right',
+          title:'Invoice Genrated',
+          status:'success'
+         })
         // You might want to do something after a successful submission
       })
       .catch((error) => {
@@ -248,71 +253,149 @@ export default function Invoice() {
   }, []);
   // console.log(Edata);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedValue, setEditedValue] = useState("");
-  const [editedService, setEditedService] = useState('');
+  const [editedValue, setEditedValue] = useState(0);
+  const [editedService, setEditedService] = useState("");
+
+  // const handleDoubleClick = (serviceName) => {
+  //   setIsEditing(true);
+  //   setEditedService(serviceName);
+  //   const existingObject = arrayOfObjects.find(obj => obj.checkboxValue === serviceName);
+  //   const existingValue = existingObject ? existingObject.editedValue : '';
+  //   setEditedValue(existingValue || '');
+  //   setSelectedType('flat'); // You can customize this value based on your needs
+  // };
+
+  // const handleInputChange = (event) => {
+  //   setEditedValue(event.target.value);
+  // };
+
+  // const handleInputBlur = () => {
+  //   setIsEditing(false);
+  //   // setEditedService('');
+  //   setEditedValue(editedValue);
+  // };
+  // //
+  const [editedValues, setEditedValues] = useState({});
 
   const handleDoubleClick = (serviceName) => {
     setIsEditing(true);
-    setEditedValue("");
-    setEditedService(serviceName);
+    setEditedValues((prev) => ({
+      ...prev,
+      [serviceName]: {
+        service: serviceName,
+        value: prev[serviceName] ? prev[serviceName].value : 0,
+      },
+    }));
+    setSelectedType("flat");
   };
 
-  const handleInputChange = (event) => {
-    setEditedValue(event.target.value);
+  const handleInputChange = (serviceName, event) => {
+    const { value } = event.target;
+    setEditedValues((prev) => ({
+      ...prev,
+      [serviceName]: {
+        ...prev[serviceName],
+        value,
+      },
+    }));
   };
 
-  const handleInputBlur = () => {
+  const handleInputBlur = (serviceName) => {
     setIsEditing(false);
-
-    // Perform any necessary action with the edited value and service name
-    // You can use the `editedValue` and `editedService` states here
-
-    // For example, update the discount for the edited service
-    const updatedServices = selectedServices.map((service) =>
-      service === editedService ? `${editedService} | ${editedValue}` : service
-    );
-
-    setSelectedServices(updatedServices);
-    setEditedService(null);
+    setEditedValues((prev) => ({
+      ...prev,
+      [serviceName]: {
+        ...prev[serviceName],
+        value: Number(prev[serviceName].value),
+      },
+    }));
   };
-  //
-  const [value, setValue] = useState({ radioValue: '', checkboxesValue: [] });
-  const [alert , setalert] =useState('1px solid gray')
+  const [value, setValue] = useState({ radioValue: "", checkboxesValue: [] });
+  const [alert, setalert] = useState("1px solid gray");
+  const [btnAlert, setbtnAlert] = useState("");
   const [arrayOfObjects, setArrayOfObjects] = useState([]);
 
-  const handleTagCloseClick = () => {
-    setValue({ radioValue: '', checkboxesValue: [] });
-    setalert('1px solid gray');
-  };
+  // const handleTagCloseClick = () => {
+  //   setValue({ radioValue: '', checkboxesValue: [] });
+  //   setalert('1px solid gray');
+  // };
   const handleRadioChange = (value) => {
     setValue({ radioValue: value, checkboxesValue: [] });
-    setalert('1px solid gray');
+    setalert("1px solid gray");
   };
   const toast = useToast();
   const [selectedServices, setSelectedServices] = useState([]);
+  // console.log(arrayOfObjects);
+  // if (arrayOfObjects.length === 0) {
+  //   // Add a new object with stylistName as radioValue and serviceName as checkboxValue
+  //   serviceDatas.forEach((element) => {
+  //     const [stylistName, serviceName] = element.split(" | ");
+    
+  //     // Create an object with stylisName and servicename
+  //     const selectedObject = {
+  //       radioValue: stylistName,
+  //       checkboxValue: serviceName,
+  //     }
+  
+  //   // Update arrayOfObjects with the new object
+  //   setArrayOfObjects([selectedObject]);
+  //   })
+  // }
+  if (arrayOfObjects.length === 0) {
+    // If arrayOfObjects is empty, add new objects
+    serviceDatas.forEach((element) => {
+      const [stylistName, serviceNames] = element.split(" | ");
+      const servicesArray = serviceNames.split(',').map(service => service.trim());
+      // Create a new object for each service
+      servicesArray.forEach((serviceName) => {
+        const selectedObject = {
+          radioValue: stylistName,
+          checkboxValue: serviceName,
+        };
+        // console.log(servicesArray);
+  
+        // Update arrayOfObjects with the new object
+        setArrayOfObjects((prevArray) => [...prevArray, selectedObject]);
+      });
+    });
+  }
+  
+  console.log(arrayOfObjects);
+  
   
   const handleCheckboxChange = (checkboxValue) => {
+    setbtnAlert("");
     if (!value.radioValue) {
-      setalert('2px solid red');
+      setalert("2px solid red");
       toast({
-        position:'top',
-        status:'warning',
-        title:'Please select stylist first'
-      })
+        position: "top",
+        status: "warning",
+        title: "Please Select stylist first",
+        isClosable: true,
+      });
       return;
     }
-
+    else {
     // Check if the checkbox is already checked
     if (value.checkboxesValue.includes(checkboxValue)) {
       // If checked, remove the checkbox value from the state
       setValue((prevValue) => ({
         ...prevValue,
-        checkboxesValue: prevValue.checkboxesValue.filter((value) => value !== checkboxValue),
+        radioValue: "",
+        checkboxesValue: prevValue.checkboxesValue.filter(
+          (value) => value !== checkboxValue
+        ),
       }));
 
       // Also remove the corresponding object from the array
       setArrayOfObjects((prevArray) =>
-        prevArray.filter((obj) => !(obj.radioValue === value.radioValue && obj.checkboxValue === checkboxValue))
+        prevArray.filter(
+          (obj) =>
+            !(
+              obj.radioValue === value.radioValue &&
+              obj.checkboxValue === checkboxValue
+            )
+        )
       );
     } else {
       // If not checked, add the checkbox value to the state
@@ -330,10 +413,65 @@ export default function Invoice() {
       // Add the new object to the array
       setArrayOfObjects((prevArray) => [...prevArray, selectedObject]);
     }
+  };
+}
+  const handleRemoveService = (serviceName, name) => {
+    setArrayOfObjects((prevSelected) =>
+      prevSelected.filter((service) => service.checkboxValue !== serviceName)
+    );
+    setValue((prevValue) => ({
+      radioValue: prevValue.radioValue === name ? "" : prevValue.radioValue,
+      checkboxesValue: prevValue.checkboxesValue.filter(
+        (value) => value !== serviceName
+      ),
+    }));
+    // setValue({radioValue : ''})
+    setEditedValues((prev) => ({
+      ...prev,
+      [serviceName]: {
+        service: serviceName,
+        value: 0,
+      },
+    }));
+
+    // Optionally, you can reset the editedValue state for the removed service
+    setEditedValue("");
+
+    // Clear any alert or message related to the removed service
+    setbtnAlert("");
+  };
+
+  // console.log(editedValues);
+  // console.log(value)
+  //  console.log(arrayOfObjects);
+  useEffect(() => {
+    window.addEventListener("beforeunload", (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    });
+  }, []);
+  // search logic services 
+  const [filterData , setFilteredData] = useState([]);
+  const [searchService , setsearchService] = useState('');
+  useEffect(()=>{
+    setFilteredData(
+      servicedata.filter((user)=>
+      user.name_service.toLowerCase().includes(searchService.toLowerCase())
+      )
+    );
+  },[searchService , servicedata]);
+  const handleChangeAmount = (e) => {
+    setpaid(e.target.value)
+//  setbalance(totalFinal2 - (e.target.value == '' ? paid : e.target.value))
   }
-  console.log(isEditing);
-  console.log(editedService);
-  console.log(arrayOfObjects);
+  useEffect(()=>{
+    setbalance(totalFinal2 - paid);
+    // settotalPrice(totalFinal);
+    // settotalPrice2(totalFinal2);
+    // setpaid(totalFinal2);
+    // setbalance(totalFinal2 - paid);
+  },[totalFinal , totalFinal2, paid ])
+
   return (
     <>
       <Box
@@ -425,6 +563,18 @@ export default function Invoice() {
                 pos={"absolute"}
                 overflowY={"scroll"}
                 display={search == "" ? "none" : display3}
+                css={{
+                  '&::-webkit-scrollbar': {
+                    width: '4px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    width: '6px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: 'teal',
+                    borderRadius: '24px',
+                  },
+                }}
               >
                 {suggestions.map((data) => (
                   <Tag
@@ -498,101 +648,112 @@ export default function Invoice() {
                   <Th>Action</Th>
                 </Tr>
               </Thead>
-              <Tbody border={"2px dashed gray"} textAlign={'center'}>
-                {/* Your table rows go here */}
-                {/* {console.log(selectedServices)} */}
-                {/* {selectedServices.map((Service, index) => {
-                  const serviceData = servicedata.find(
-                    (data) => data.name_service === Service
-                  );
-
-                  if (serviceData) {
-                    const stylistForService = stylist.find(
-                      (s) => s.split("-")[1] === Service
-                    );
-                    console.log(stylistForService);
-                    const InitialTotal =
-                      selectedType === "perc"
-                        ? serviceData.price -
-                          (serviceData.price * percentageValue) / 100
-                        : serviceData.price - flatValue;
-
-                    totalFinal2 = InitialTotal + totalFinal2;
-                    const prevInitialTotal = Number(serviceData.price);
-                    totalFinal = prevInitialTotal + totalFinal;
-
-                    return ( */}
-                      <React.Fragment >
-                      {arrayOfObjects.map((obj, index) => {
+              <Tbody border={"2px dashed gray"} textAlign={"center"}>
+                <React.Fragment>
+                  {/* {arrayOfObjects.map((obj, index) => {
                         const serviceData = servicedata.find(
                           (data) => data.name_service === obj.checkboxValue
                         );
       
                         if (serviceData) {
-                          const InitialTotal =
-                            selectedType === "perc"
-                              ? serviceData.price -
-                                (serviceData.price * percentageValue) / 100
-                              : serviceData.price - flatValue;
-      
+                          const InitialTotal = editedService == obj.checkboxValue ? serviceData.price - editedValue : serviceData.price;
+                          console.log("Initial total" + " :" + InitialTotal);
                           totalFinal2 = InitialTotal + totalFinal2;
                           const prevInitialTotal = Number(serviceData.price);
-                          totalFinal = prevInitialTotal + totalFinal;
-                      return(
+                          totalFinal = prevInitialTotal + totalFinal; */}
+                  {arrayOfObjects.map((obj, index) => {
+                    const serviceData = servicedata.find(
+                      (data) => data.name_service === obj.checkboxValue
+                    );
+
+                    if (serviceData) {
+                      // const editedService = editedValues[obj.checkboxValue];
+                      // // console.log(editedService);
+                      // const InitialTotal =
+                      //   editedService && selectedType === "flat"
+                      //     ? "₹" +
+                      //       (serviceData.price - Number(editedService.value))
+                      //     : "₹" + Number(serviceData.price);
+                      const editedService = editedValues[obj.checkboxValue];
+                      const InitialTotal = editedService
+                        ? serviceData.price - editedService.value
+                        : Number(serviceData.price);
+
+                      totalFinal2 = InitialTotal + totalFinal2;
+                      const prevInitialTotal = Number(serviceData.price);
+                      totalFinal = prevInitialTotal + totalFinal;
+                      
+
+                      return (
                         <Tr
                           fontSize={"small"}
                           color={"black"}
                           textAlign={"center"}
                           key={index}
                         >
-                          <Td>
-                            {obj.radioValue}
-                          </Td>
+                          <Td>{obj.radioValue}</Td>
                           <Td>{obj.checkboxValue}</Td>
-                          <Td textAlign={'center'}>1</Td>
-                          <Td>
-                            {"₹" + InitialTotal}
-                          </Td>
+                          <Td textAlign={"center"}>1</Td>
+                          <Td>{"₹" + prevInitialTotal}</Td>
 
-                          <Td onDoubleClick={() => handleDoubleClick(obj.checkboxeValue)} cursor={'pointer'}>
-                            {isEditing ?  (
+                          <Td
+                            onDoubleClick={() =>
+                              handleDoubleClick(obj.checkboxValue)
+                            }
+                            cursor={"pointer"}
+                          >
+                            {isEditing && editedService ? (
                               <Input
                                 type="number"
-                                value={editedValue}
-                                onChange={handleInputChange}
-                                onBlur={handleInputBlur}
-                                autoFocus
+                                value={editedService.value}
+                                onChange={(e) =>
+                                  handleInputChange(obj.checkboxValue, e)
+                                }
+                                onBlur={() =>
+                                  handleInputBlur(obj.checkboxValue)
+                                }
+                                borderRadius={"none"}
+                                padding={"none"}
+                                _hover={{
+                                  border: "1px solid #121212",
+                                }}
+                                focusBorderColor="black"
+                                border={"1px solid #121212"}
                               />
                             ) : (
                               <>
-                                {
-                                  /* ... (Existing cell content) */
-
-                                  selectedType === "perc" ? (
-                                    <>{percentageValue + " | P"}</>
-                                  ) : selectedType === "flat" ? (
-                                    <>{flatValue + " | F"}</>
-                                  ) : (
-                                    <>0 | 0</>
-                                  )
-                                }
+                                {selectedType === "flat" && editedService ? (
+                                  <>{editedService.value + " | F"}</>
+                                ) : (
+                                  <> 0 | F </>
+                                )}
                               </>
                             )}
                           </Td>
-                          <Td>{"₹" + 100}</Td>
+                          {/* <Td>{ editedService && obj.checkboxValue == editedService ? "₹" + InitialTotal : "₹" + Number(serviceData.price)}</Td> */}
+                          <Td>{"₹" + InitialTotal}</Td>
                           <Td>
                             <IconButton
                               variant={"outline"}
                               isRound
+                              boxShadow={btnAlert}
                               colorScheme="red"
                               icon={<IoClose />}
-                              // onClick={() => handleRemoveService(Service)}
+                              onClick={() =>
+                                handleRemoveService(
+                                  obj.checkboxValue,
+                                  obj.radioValue
+                                )
+                              }
+                              transition={"ease 0.3s"}
                             />
                           </Td>
                         </Tr>
-)}})}
-                      </React.Fragment>
-                    {/* );
+                      );
+                    }
+                  })}
+                </React.Fragment>
+                {/* );
                   }
 
                   return null; // If serviceData is undefined, skip rendering this fragment
@@ -626,7 +787,7 @@ export default function Invoice() {
                   rightIcon={<FaSort />}
                   ml={4}
                   m={3}
-                  transition={'ease-in 0.3s'}
+                  transition={"ease-in 0.3s"}
                   _after={{
                     position: "absolute",
                     left: "100%",
@@ -639,8 +800,23 @@ export default function Invoice() {
                 >
                   Stylist
                 </MenuButton>
-                <MenuList maxH={"30dvh"} overflow={"auto"}>
-                  <RadioGroup value={value.radioValue} onChange={(value) => handleRadioChange(value)}>
+                <MenuList maxH={"30dvh"} overflow={"auto"}  css={{
+                '&::-webkit-scrollbar': {
+                  width: '4px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  width: '6px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: '#c4c4c4',
+                  // borderRadius: '24px',
+                },
+                
+              }}>
+                  <RadioGroup
+                    value={value.radioValue}
+                    onChange={(value) => handleRadioChange(value)}
+                  >
                     {Edata.map((i, key) => (
                       <MenuItem
                         index={key}
@@ -663,47 +839,113 @@ export default function Invoice() {
                 ml={4}
                 border={"1px solid #121214"}
                 placeholder="Search..."
+                value={searchService}
+                onChange={(e)=>{setsearchService(e.target.value)}}
                 _placeholder={{ color: "gray" }}
                 _hover={{ border: "1px solid black" }}
                 cursor={"pointer"}
                 color={"#121212"}
               />
-              <Box
+              {/* <Box
                 // border={"1px solid red"}
                 w={"fit-content"}
-                ml={3}
-                display={value.radioValue == "" ? "none" : "block"}
+                // ml={3}
+                display={arrayOfObjects.radioValue == "" ? "none" : "block"}
               >
-                <Tag color={"teal"} p={3} bg={'gray.200'}>{value.radioValue}<TagCloseButton onClick={handleTagCloseClick}/></Tag>
-              </Box>
-              <Box textAlign={"left"} display={"felx"}>
+                {arrayOfObjects.map((i) => (
+                  <Tag color={"teal"} p={3} bg={"gray.200"} >
+                    {i.radioValue}
+                  </Tag>
+                ))}
+              </Box> */}
+              <Box textAlign={"left"} display={"felx"} maxH={"28dvh"}  overflowY={'scroll'}
+              //  boxShadow={'0px 0px 5px gray'}
+              // border={'1px solid #c4c4c4'}
+              p={3}
+               css={{
+                '&::-webkit-scrollbar': {
+                  width: '4px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  width: '6px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: '#c4c4c4',
+                  borderRadius: '24px',
+                },
+                
+              }}
+              >
                 <VStack
                   color={"black"}
                   alignItems={"flex-start"}
-                  m={3}
-                  w={"fit-content"}
+                  // m={3}
+                  w={"100%"}
+                  // border={'1px solid green'}
                 >
-                  {servicedata.map((item, index) => (
-                    <Box key={index} display={"flex"}>
-                      <Text display={"felx"}>
-                        {item.name_service.toUpperCase()}
-                      </Text>
-                      <Box position={"absolute"} left={"40%"}>
-                        <Checkbox
-                          value={item.name_service}
-                          border={"gray"}
-                          // isChecked={selectedServices.includes(
-                          //   item.name_service
-                          // )}
-                          // onChange={() =>
-                          //   handleCheckboxChange(item.name_service)
-                          // }
-                          isChecked={value.checkboxesValue.includes(item.name_service)}
-        onChange={() => handleCheckboxChange(item.name_service)}
-                        ></Checkbox>
+                  {filterData.map((item, index) => {
+                    const matchObject = arrayOfObjects
+                      .map((i) => i.checkboxValue)
+                      .includes(item.name_service);
+                    //  const mo2 = matchObject.includes(item.name_service);
+                    // console.log("mathcObject" + ":" + matchObject);
+
+                    return (
+                      <Box key={index} display={"flex"}  p={'1px 10px'} width={'100%'} 
+                       justifyContent={'space-between'}
+                       >
+                        <Text
+                          display={"felx"}
+                          textDecoration={matchObject ? "line-through" : ""}
+                          transition={"ease 0.3s"}
+                          // pos={'absolute'}
+                        >
+                          {item.name_service.toUpperCase()}
+                        </Text>
+                        {/* <Box pos={'relative'} left={"40%"}> */}
+                          <Checkbox
+                            value={item.name_service}
+                            border={"#121212"}
+                            colorScheme={matchObject ? "red" : "teal"}
+                            opacity={matchObject ? 0.8 : ""}
+                            isChecked={
+                              matchObject
+                                ? true
+                                : value.checkboxesValue.includes(
+                                    item.name_service
+                                  )
+                            }
+                            onChange={
+                              matchObject
+                                ? () => {
+                                    toast({
+                                      position: "top",
+                                      status: "error",
+                                      title: "Note",
+                                      description:
+                                        "Click Action Button to Remove the Service !",
+                                      isClosable: true,
+                                    });
+                                    //  s
+                                    setbtnAlert(
+                                      "0px 0px 11px 4px rgba(235,26,116,1)"
+                                    );
+                                    setTimeout(() => {
+                                      setbtnAlert("");
+                                    }, 1200);
+                                  }
+                                : () => handleCheckboxChange(item.name_service)
+                            }
+                            // pos={'abs'} left={'40%'}
+                            // pointerEvents={matchObject ? 'none' : ''}
+                            // onClick={matchObject ? ()=>{alert('Click The close button adjecent ot service')} : ''}
+                          >
+                            {" "}
+                          </Checkbox>
+                        {/* </Box> */}
                       </Box>
-                    </Box>
-                  ))}
+                    );
+                  })}
                 </VStack>
               </Box>
             </Box>
@@ -728,8 +970,10 @@ export default function Invoice() {
                 <Text>Subtotal : {"₹" + Number(totalFinal)}</Text>
                 <Text>Discount : {"₹" + (totalFinal - totalFinal2)} </Text>
                 <Text>Net: {"₹" + totalFinal2}</Text>
-                <Text>SGST(9%) : {"₹" + (totalFinal2 * 9) / 100}</Text>
-                <Text>CGST(9%) : {"₹" + (totalFinal2 * 9) / 100} </Text>
+                {/* <Text>SGST(9%) : {"₹" + (totalFinal2 * 9) / 100}</Text>
+                <Text>CGST(9%) : {"₹" + (totalFinal2 * 9) / 100} </Text> */}
+                <Text>SGST(9%) : {"₹" + 0}</Text>
+                <Text>CGST(9%) : {"₹" + 0} </Text>
                 <Text display={"flex"}>
                   Tip : &nbsp;
                   <Input
@@ -742,7 +986,7 @@ export default function Invoice() {
                 </Text>
                 <Text display={display2}>
                   Payment:{" "}
-                  {"₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2)}{" "}
+                  {"₹" + Number(totalFinal2)}{" "}
                   <Tag color={"teal"} bg={"gray.200"}>
                     {service}{" "}
                     <TagCloseButton
@@ -755,21 +999,21 @@ export default function Invoice() {
                 </Text>
                 <Text fontWeight={"semibold"}>
                   Total :{" "}
-                  {"₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2)}{" "}
+                  {/* {"₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2)}{" "} */}
+                  {"₹" + Number(totalFinal2 )}{" "}
+
                 </Text>
                 <Text display={"flex"}>
                   {" "}
                   Paid :
                   <Text color={"teal"} display={display2}>
-                    {"₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2)}{" "}
+                    {"₹" + Number(paid)}{" "}
                   </Text>{" "}
                 </Text>
                 <Text display={"flex"}>
-                  Balance :
+                  Balance : 
                   <Text color={"red"} display={display2}>
-                    {"₹" +
-                      (Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2) -
-                        Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2))}
+                    {"₹" + Number(balance)}
                   </Text>{" "}
                 </Text>
               </VStack>
@@ -814,7 +1058,7 @@ export default function Invoice() {
               &nbsp;YYYY/MM/DD
             </Text>
             <Text display={"flex"}>
-              <Text fontWeight={"semibold"}>last Visit :</Text>&nbsp; YYYY/MM/DD
+              <Text fontWeight={"semibold"}>Last Visit :</Text>&nbsp; YYYY/MM/DD
             </Text>
             <Text display={"flex"}>
               {" "}
@@ -830,9 +1074,9 @@ export default function Invoice() {
           >
             <Text display={"flex"}>
               {" "}
-              <Text fontWeight={"semibold"}>
-                Service Total : {"₹" + Number(totalFinal)}{" "}
-              </Text>
+              {/* <Text fontWeight={"semibold"}>
+                Service Total : {"₹" + Number(totalFinal2)}{" "}
+              </Text> */}
             </Text>
             <Text display={"flex"}>
               {" "}
@@ -840,6 +1084,7 @@ export default function Invoice() {
               <RadioGroup
                 defaultValue="perc"
                 onChange={(e) => handleTypeChange(e)}
+                isDisabled={true}
               >
                 <Stack spacing={5} direction="row" ml={4} mt={-1}>
                   <Radio
@@ -870,6 +1115,7 @@ export default function Invoice() {
                     p={1}
                     value={selectedType == "perc" ? percentageValue : flatValue}
                     onChange={(e) => handleInputChange(e)}
+                    isDisabled={true}
                   />
                 </Stack>
               </RadioGroup>
@@ -933,7 +1179,7 @@ export default function Invoice() {
                     handleItemClick(item);
                   }}
                   cursor={"pointer"}
-                  pointerEvents={item === "CASH" ? "pointer" : "none"}
+                  // pointerEvents={item === "CASH" ? "pointer" : "none"}
                 >
                   {item}
                 </GridItem>
@@ -943,17 +1189,29 @@ export default function Invoice() {
             <Box mt={3} display={service === "CASH" ? "block" : "none"}>
               <Text fontWeight={"thin"}>
                 Amount :{" "}
-                <span style={{ fontWeight: "bold" }}>
+                {/* <span style={{ fontWeight: "bold" }}>
                   {"₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2)}{" "}
+                </span> */}
+                <span style={{ fontWeight: "bold" }}>
+                  {"₹" + Number(totalFinal2)}{" "}
                 </span>
+                <Tag colorScheme='green'>{service}</Tag>
               </Text>
               <Text display={"felx"} mt={2} fontWeight={"thin"}>
-                Add Note{" "}
+                Paid Amount : 
                 <Input
-                  type="text"
+                  type="number"
+                  w={'fit-content'}
+                  m={2}
                   border={"1px solid gray"}
                   _hover={{ border: "1px solid gray" }}
+                  value={paid}
+                  onChange={(e) => {handleChangeAmount(e)}}
                 />
+                <Tag
+                mt={2}
+                p={3}  
+                 colorScheme={balance == 0 ?'teal':'red'} color={  balance == 0 ?'teal':'red'}>Balance : {balance}</Tag>
               </Text>
               <Button
                 variant={"outline"}
@@ -967,13 +1225,14 @@ export default function Invoice() {
               </Button>
             </Box>
             <Box display={display2}>
-              <Text mt={4} fontWeight={"thin"}>
+              {/* <Text mt={4} fontWeight={"thin"}>
                 Description :{" "}
                 <Textarea
                   border={"1px solid gray"}
                   _hover={{ border: "1px solid gray" }}
                 ></Textarea>
-              </Text>
+              </Text> */}
+              <hr style={{background:'black' , margin:'10px'}}/>
               <Text display={"flex"} mt={3}>
                 Send Invoice on :{" "}
                 <RadioGroup defaultValue="2">
@@ -999,7 +1258,7 @@ export default function Invoice() {
                 <Center>
                   <Button
                     variant={"solid"}
-                    color={"black"}
+                    colorScheme='blackAlpha'
                     onClick={() => {
                       setService("");
                       setdisplayS("none");
@@ -1012,6 +1271,7 @@ export default function Invoice() {
                     variant={"solid"}
                     colorScheme="orange"
                     as={Link}
+                    ml={2}
                     to={`/invoicegernrate/INV|${selectedDate}|KRUB|${selectdId}`}
                     // onClick={() => {
                     //   updateSelectedData(Datapost , selectedServices, selectedDate , "₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2));

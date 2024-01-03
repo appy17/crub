@@ -1023,3 +1023,32 @@ export default function AddEmployee() {
   //     prevSelected.filter((service) => service !== serviceName)
   //   );
   // };
+  -----------------------------
+   {/* <Td onDoubleClick={() => handleDoubleClick(obj.checkboxValue)} cursor={'pointer'}>
+                            {isEditing && editedService == obj.checkboxValue ?   (
+                               <Input
+                                type="number"
+                                value={editedValue}
+                                onChange={handleInputChange}
+                                onBlur={handleInputBlur}
+                                borderRadius={"none"}
+                                padding={'none'}
+                                _hover={{
+                                  border:'1px solid #121212'
+                                }}
+                                focusBorderColor="black"
+                                border={'1px solid #121212'}
+                              />
+                              ) : (
+                              <>
+                                {
+                                  // /* ... (Existing cell content) 
+
+                                   selectedType === "flat" && editedService == obj.checkboxValue ? (
+                                    <>{editedValue + " | F"}</>
+                                   ): <> 0 | F </>
+                                  
+                                }
+                              </>
+                            )} 
+                          </Td>  */}

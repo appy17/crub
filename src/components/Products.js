@@ -202,19 +202,19 @@ const Products = () => {
     }
   };
 
-  const categories = [...new Set(data.map((product) => product.category))];
+  const categories = [...new Set(data?.map((product) => product.category))];
 
-  const filteredData = data.filter(
+  const filteredData = data?.filter(
     (product) =>
       (categoryFilter === "All" || product.category === categoryFilter) &&
       (product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.price.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData?.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredData?.slice(indexOfFirstItem, indexOfLastItem);
 
   const renderPagination = () => {
     const pageItems = [];
@@ -311,7 +311,7 @@ const Products = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {currentItems.map((product) => (
+            {currentItems?.map((product) => (
               <Tr key={product.id}>
                 <Td  color="gray">
                   {/* <Checkbox

@@ -88,7 +88,7 @@ export default function Test() {
       >
         Checkbox 2
       </Checkbox>
-
+{/*  */}
       <br />
 
       {/* Display data in table */}
@@ -111,4 +111,3 @@ export default function Test() {
     </Box>
   );
 }
-

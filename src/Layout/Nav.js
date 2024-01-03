@@ -6,13 +6,30 @@ import { Box, Button, Text , Popover,
   PopoverFooter,
   PopoverArrow,
   PopoverCloseButton,
-  PopoverAnchor, } from "@chakra-ui/react";
-import React from "react";
+  PopoverAnchor,
+  Tag, } from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
 import { TbScissorsOff } from "react-icons/tb";
 import { useAppContext } from "../components/context/AppContext";
 
 export default function Nav() {
   const { logout} = useAppContext();
+  // const [ipAdd, setIp] = useState('undefined');
+
+  // const fetchIpAddress = async () => {
+  //   try {
+  //     const response = await fetch('https://api.ipify.org/?format=json');
+  //     const data = await response.json();
+  //     setIp(data.ip);
+  //   } catch (error) {
+  //     console.error('Error fetching IP address:', error);
+  //     setIp('undefined');
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchIpAddress();
+  // }, []);
   return (
     <Box
       borderBottom={"1px solid whitesmoke"}
@@ -38,6 +55,7 @@ export default function Nav() {
       >
         <Text> Krub Salon</Text>
       </Button>
+      {/* <Tag colorScheme="red" color={'red'} >You IP Address : {ipAdd}</Tag> */}
       <Popover>
   <PopoverTrigger>
     <Button float={'right'} 
