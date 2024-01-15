@@ -314,35 +314,26 @@ export default function Invoice() {
   const [alert, setalert] = useState("1px solid gray");
   const [btnAlert, setbtnAlert] = useState("");
   const [arrayOfObjects, setArrayOfObjects] = useState([]);
+  const [stylistArray ,  setStylistArray] = useState([]);
+  console.log(stylistArray)
+  console.log(arrayOfObjects);
 
   // const handleTagCloseClick = () => {
   //   setValue({ radioValue: '', checkboxesValue: [] });
   //   setalert('1px solid gray');
   // };
   const handleRadioChange = (value) => {
+    // let arr = [];
     setValue({ radioValue: value, checkboxesValue: [] });
     setalert("1px solid gray");
+    // arr.push(value);
+    setStylistArray((prev)=> [...prev , value])
   };
   const toast = useToast();
   const [selectedServices, setSelectedServices] = useState([]);
-  // console.log(arrayOfObjects);
-  // if (arrayOfObjects.length === 0) {
-  //   // Add a new object with stylistName as radioValue and serviceName as checkboxValue
-  //   serviceDatas.forEach((element) => {
-  //     const [stylistName, serviceName] = element.split(" | ");
-    
-  //     // Create an object with stylisName and servicename
-  //     const selectedObject = {
-  //       radioValue: stylistName,
-  //       checkboxValue: serviceName,
-  //     }
-  
-  //   // Update arrayOfObjects with the new object
-  //   setArrayOfObjects([selectedObject]);
-  //   })
-  // }
   if (arrayOfObjects.length === 0) {
     // If arrayOfObjects is empty, add new objects
+    
     serviceDatas.forEach((element) => {
       const [stylistName, serviceNames] = element.split(" | ");
       const servicesArray = serviceNames.split(',').map(service => service.trim());
@@ -353,14 +344,13 @@ export default function Invoice() {
           checkboxValue: serviceName,
         };
         // console.log(servicesArray);
-  
+       setStylistArray((prev)=>[...prev , stylistName])
         // Update arrayOfObjects with the new object
         setArrayOfObjects((prevArray) => [...prevArray, selectedObject]);
       });
     });
   }
-  
-  console.log(arrayOfObjects);
+  // console.log(value);
   
   
   const handleCheckboxChange = (checkboxValue) => {
@@ -441,9 +431,8 @@ export default function Invoice() {
     setbtnAlert("");
   };
 
-  // console.log(editedValues);
-  // console.log(value)
   //  console.log(arrayOfObjects);
+ 
   useEffect(() => {
     window.addEventListener("beforeunload", (event) => {
       event.preventDefault();
@@ -787,6 +776,7 @@ export default function Invoice() {
                   rightIcon={<FaSort />}
                   ml={4}
                   m={3}
+                  display={'felx'}
                   transition={"ease-in 0.3s"}
                   _after={{
                     position: "absolute",
@@ -796,9 +786,10 @@ export default function Invoice() {
                     fontSize: "15px",
                     color: "red",
                     fontWeight: "bold",
+                    
                   }}
                 >
-                  Stylist
+                  {value.radioValue == '' ? 'Stylist' : value.radioValue}
                 </MenuButton>
                 <MenuList maxH={"30dvh"} overflow={"auto"}  css={{
                 '&::-webkit-scrollbar': {
@@ -833,7 +824,7 @@ export default function Invoice() {
               </Menu>
               <Input
                 h={"40px"}
-                w={"40%"}
+                w={value.radioValue == '' ? '40%' : "30%"}
                 pos={"relative"}
                 top={"3px"}
                 ml={4}

@@ -251,6 +251,7 @@ const handleUpdate = async () => {
   const applyFilters = () => {
     setFilterModalOpen(false);
   };
+  console.log(filteredData)
   // const matchingUser = filteredData.find((user) => user.id === Number(clientId));
 
   // const isUpdateDisabled = !matchingUser || Object.values(updateData).some((value) => value === '');
@@ -542,6 +543,7 @@ const handleUpdate = async () => {
               <Th>User Name</Th>
               <Th>Mobile No.</Th>
               <Th>Amount</Th>
+              <Th>Balance</Th>
               <Th>Last Visit</Th>
             </Tr>
           </Thead>
@@ -551,7 +553,8 @@ const handleUpdate = async () => {
                 <Td color="black">C{user.id}</Td>
                 <Td color="black">{user.name}</Td>
                 <Td color="black">{user.mobile_number}</Td>
-                <Td color="black">{"₹" + Number(user.amount)}</Td>
+                <Td color="black" textAlign={'center'}>{"₹" + Number(user.spent)}</Td>
+                <Td color="red" textAlign={'center'}>{"₹" + Number(user.balance)}</Td>
                 <Td color="black">
                   {user.last_visit ? user.last_visit : "2023-01-01"}
                 </Td>

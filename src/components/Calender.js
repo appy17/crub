@@ -40,7 +40,12 @@ import {
   Flex,
   Tooltip,
   Avatar,
-  Icon, // Add Input component
+  Icon,
+  Card,
+  CardBody,
+  Stat,
+  StatNumber,
+  StatHelpText, // Add Input component
 } from "@chakra-ui/react";
 import {
   Menu,
@@ -948,7 +953,6 @@ const [align , setalign] = useState(false);
       >
         <Center> Appointment Scheduler </Center>
       </Heading>
-
       <div>
         <Button
           onClick={goToPreviousDate}
@@ -1230,10 +1234,14 @@ const [align , setalign] = useState(false);
                     align="start"
                     spacing={0}
                     w="100%"
+                    // zIndex={999999}
+                    // mt={10}
                     transition={"ease-in 2s"}
                     maxH={"90%"}
                     overflowY={"scroll"}
                     display={displayS2}
+                    // border={'1px solid red'}
+                    // pos='fixed'
                   >
                     {suggestions.map((data) => (
                       <Tag

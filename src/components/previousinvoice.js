@@ -6,6 +6,7 @@ import {
   Flex,
   HStack,
   Heading,
+  Input,
   Spinner,
   Tag,
   Text,
@@ -37,15 +38,17 @@ export default function Previousinvoice() {
   useEffect(() => {
     loadInvoiceData();
   }, []);
-  // console.log(invoiceD);
+  console.table(invoiceD);
+  
   return (
     <>
       <Box
         color={"black"}
-        // borderBottom={"1px solid gray"}
+        borderBottom={"1px solid gray"}
         w={"full"}
         height={"fit-content"}
         p={2}
+        // display={'flex'}
       >
         <Button
           color={"black"}
@@ -66,10 +69,21 @@ export default function Previousinvoice() {
           PREVIOUS INVOICES
         </Button>
       </Box>
+      {/* <Input
+        m={4}
+        type="text"
+        border={"1px solid black"}
+        placeholder="Search....."
+        w={"56%"}
+        _placeholder={{color:'gray'}}
+        color={'black'}
+        _hover={{border:'1px solid black'}}
+      /> */}
+
       {/* <Center mt={'10%'}><Heading color={'#141414'} fontSize={'md'} fontWeight={'hairline'}>Nothing To See | Under Developement</Heading>
                 <Spinner color='black' ml={10}/></Center> */}
 
-      {invoiceD.length == null ? (
+      {invoiceD.length == 0 ? (
         <Center mt={"10%"}>
           <Heading color={"#141414"} fontSize={"md"} fontWeight={"hairline"}>
             {" "}
@@ -144,14 +158,14 @@ export default function Previousinvoice() {
                 </Center>
                 <Center>
                   <Box mt={3}>
-                    {Number(i.paid_amount) == 0 ? (
+                    {Number(i.balance) > 0 ? (
                       <Tag bg={"red.400"} color={"white"} p={3}>
-                        <Spinner size={"sm"}></Spinner> 
-                        &nbsp;Balance 
+                        <Spinner size={"sm"}></Spinner>
+                        &nbsp;Balance
                         {/* {Number(i.balance)} */}
                       </Tag>
                     ) : (
-                     <Tag bgColor={"teal"} p={3} display={"flex"}>
+                      <Tag bgColor={"teal"} p={3} display={"flex"}>
                         {" "}
                         <IoCheckmarkDoneOutline />
                         &nbsp; Paid

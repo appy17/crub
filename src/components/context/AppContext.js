@@ -68,6 +68,7 @@ export const AppProvider = ({ children }) => {
         isClosable: true,
       });
       setLoading(false);
+
       
     }
     else if (!access){
@@ -87,7 +88,7 @@ export const AppProvider = ({ children }) => {
       toast({
         position: 'top',
         title: 'Invalid ID/Password',
-        description: 'Please Try again using, Valid Inputs',
+        description: 'Please Try again using, with valid Inputs',
         status: 'error',
         duration: 9000,
         isClosable: true,

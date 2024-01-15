@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Nav from './Nav'
 import Side from './Side'
 import { Box, Flex, Text } from '@chakra-ui/react'
@@ -11,12 +11,14 @@ export default function Layout() {
  const navigate = useNavigate();
  const location = useLocation();
 
-useEffect(()=>{
-  if(!authUser){
-    navigate('/');
-  }
-},[authUser , navigate , location])
+// useEffect(()=>{
+//   if(!authUser){
+//     navigate('/');
+//   }
+
+// },[authUser , navigate , location ])
  
+
   return (
     <Box bg={'white'}>
    <Nav/>

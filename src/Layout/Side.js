@@ -67,8 +67,8 @@ export default function Side() {
   <Button  as={RouteLink} to='/calender' leftIcon={<SlCalender />} color={'black'}  variant='ghost'>
     Calender
   </Button>
-  <Button as={RouteLink} to='/products' leftIcon={<HiShoppingCart />} color={'black'}  variant='ghost' >
-    Products
+  <Button as={RouteLink} to='inventory/products' leftIcon={<HiShoppingCart />} color={'black'}  variant='ghost' >
+   Inventory
   </Button>
   <Button leftIcon={<FaUsersLine/>} 
       as={RouteLink} to='/client' color={'black'}  variant='ghost'>
