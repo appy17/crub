@@ -523,9 +523,9 @@ const Products = () => {
                 ) : component == "Consumption" ? (
                   <Cosupmtion data={value}/>
                 ) : component == "Stock" ? (
-                  <Stock />
+                  <Stock data={value}/>
                 ) : component == "StockHistory" ? (
-                  <StockHistory />
+                  <StockHistory data={value}/>
                 ) : (
                   ""
                 )}

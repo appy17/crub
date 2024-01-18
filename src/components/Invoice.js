@@ -18,6 +18,7 @@ import {
   MenuList,
   Radio,
   RadioGroup,
+  Spinner,
   Stack,
   Table,
   Tag,
@@ -214,6 +215,7 @@ export default function Invoice() {
       date: selectedDate,
       // stylistName: "your_stylist_name", // Replace with actual stylist name
       services: JSON.stringify(arrayOfObjects),
+      priceD: arrayOfObjects,
       type: selectedType,
       totalPrice: totalFinal2,
       discountPrice: totalFinal - totalFinal2,
@@ -315,9 +317,15 @@ export default function Invoice() {
   const [btnAlert, setbtnAlert] = useState("");
   const [arrayOfObjects, setArrayOfObjects] = useState([]);
   const [stylistArray ,  setStylistArray] = useState([]);
-  console.log(stylistArray)
   console.log(arrayOfObjects);
 
+  const getServicePrice = (serviceName) => {
+    const service = servicedata.find(
+      (service) =>  (service.name_service === serviceName)
+    );
+ // Return the price or 0 if not found
+    return service ? Number(service.price) : 0;
+  };
   // const handleTagCloseClick = () => {
   //   setValue({ radioValue: '', checkboxesValue: [] });
   //   setalert('1px solid gray');
@@ -331,25 +339,32 @@ export default function Invoice() {
   };
   const toast = useToast();
   const [selectedServices, setSelectedServices] = useState([]);
-  if (arrayOfObjects.length === 0) {
+
+  if (arrayOfObjects.length === 0 && servicedata.length > 0) {
     // If arrayOfObjects is empty, add new objects
-    
     serviceDatas.forEach((element) => {
       const [stylistName, serviceNames] = element.split(" | ");
       const servicesArray = serviceNames.split(',').map(service => service.trim());
+
       // Create a new object for each service
       servicesArray.forEach((serviceName) => {
+        loadServiceData();
+
         const selectedObject = {
           radioValue: stylistName,
           checkboxValue: serviceName,
+          price: getServicePrice(serviceName)
         };
-        // console.log(servicesArray);
-       setStylistArray((prev)=>[...prev , stylistName])
+  
         // Update arrayOfObjects with the new object
         setArrayOfObjects((prevArray) => [...prevArray, selectedObject]);
       });
+  
+      // Add the stylistName to the stylistArray
+      setStylistArray((prev) => [...prev, stylistName]);
     });
   }
+  
   // console.log(value);
   
   
@@ -398,6 +413,7 @@ export default function Invoice() {
       const selectedObject = {
         radioValue: value.radioValue,
         checkboxValue: checkboxValue,
+        price: getServicePrice(checkboxValue)
       };
 
       // Add the new object to the array
@@ -405,6 +421,7 @@ export default function Invoice() {
     }
   };
 }
+
   const handleRemoveService = (serviceName, name) => {
     setArrayOfObjects((prevSelected) =>
       prevSelected.filter((service) => service.checkboxValue !== serviceName)
@@ -463,6 +480,7 @@ export default function Invoice() {
 
   return (
     <>
+    <Spinner display={servicedata.length > 0 ? 'none': 'block'} color="red"/>
       <Box
         color={"black"}
         // border={"1px solid green"}
@@ -1177,7 +1195,7 @@ export default function Invoice() {
               ))}
             </Grid>
             {/* Cash Payment From  */}
-            <Box mt={3} display={service === "CASH" ? "block" : "none"}>
+            <Box mt={3} display={service === " " ? "none" : "block"}>
               <Text fontWeight={"thin"}>
                 Amount :{" "}
                 {/* <span style={{ fontWeight: "bold" }}>

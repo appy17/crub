@@ -20,13 +20,14 @@ import {
   Button,
   useToast,
   Tag,
+  Center,
 } from "@chakra-ui/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-
+import { FaBoxOpen } from "react-icons/fa";
 export default function Consumption(props) {
   const dbpath1 = "http://localhost/backend/";
-  const { id, unit , size } = props.data;
+  const { id, unit , size , name  , type} = props.data;
   const toast = useToast();
   const [Edata, setEData] = useState([]);
   const [servicedata, setServiceData] = useState([]);
@@ -60,16 +61,14 @@ export default function Consumption(props) {
   const [measurement, setMeasurement] = useState("");
   const [selectedService, setService] = useState("");
 
-  console.log(usedBy);
   const insertData = async () => {
     const Consumption_data = {
       product_id: id, // Assuming 'id' is the product ID received as a prop
-      used_by: usedBy,
       measurement: measurement,
       service: selectedService,
       unit_: unit, // You need to manage selectedService in your component state
       date: new Date().toISOString().split("T")[0],
-      u_id : `${id}@${data1.length}`
+      u_id : usedBy,
     };
     axios
       .post("http://localhost/backend/addConsumption.php", Consumption_data)
@@ -87,13 +86,14 @@ export default function Consumption(props) {
       });
   };
   // fetch_data
+  console.log(usedBy);
   const [data, setdata] = useState([]);
   const fetchData = async () => {
     try {
       const response = await axios.get(
         `http://localhost/backend/getConsumptionData.php?id=${id}`
       );
-      setdata(response.data.phpresult.reverse());
+      setdata(response.data.phpresult?.reverse());
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -101,7 +101,11 @@ export default function Consumption(props) {
 
   useEffect(() => {
     fetchData();
-  }, [id ]);
+    fetchData1();
+    console.log(`Fetching data of ${name}........`)
+
+  }, [id]);
+  console.log(data);
   const [data1, setdata1] = useState([]);
   const fetchData1 = async () => {
     try {
@@ -114,19 +118,16 @@ export default function Consumption(props) {
     }
   };
 
-  useEffect(() => {
-    fetchData1();
-  }, [id]);
+  let isValid = data1?.filter((d) => d.isDone == 0) 
+  console.log('filter',isValid)
 
-  console.log(data1);
-  let isValid = data1?.find((d) => d.unique_id == `${id}@${data1.length}`) 
-  console.log(isValid) 
   return (
- <Box w={"100%"}>
-   { isValid  && isValid.isDone ==  0 ? (
+    <>
+ { type == 'c' ?  <Box w={"100%"}>
+   { isValid  ?  (
     <>
       <HStack gap={"7px"} color={"black"} alignItems="flex-start">
-        <Tag color={'black'}>Available for Consumption : {Number(isValid.original - Number(isValid.consumption))}</Tag>
+        {/* <Tag color={'black'}>Available for Consumption : {Number(isValid.original - Number(isValid.consumption))}</Tag> */}
         <Flex flexDirection={"column"} width="50%">
           <FormLabel color={"gray.600"} fontWeight={"light"} fontSize={"sm"}>
             Product Issued to
@@ -138,10 +139,11 @@ export default function Consumption(props) {
             _hover={{ border: "1px solid black" }}
             value={usedBy}
             onChange={(e) => setUsedBy(e.target.value)}
+            fontSize={'small'}
           >
-            {Edata.map((i) => (
-              <option value={i.name} style={{ color: "white" }}>
-                {i.name}
+            {isValid.map((i) => (
+              <option value={i.unique_id} style={{ color: "white"  , fontSize:'small'}}>
+                {i.p_name}@Available : {Number(i.original - Number(i.consumption))}{unit}
               </option>
             ))}
           </Select>
@@ -211,11 +213,12 @@ export default function Consumption(props) {
           </Button>
         </Flex>
       </HStack>
-      </> ) : 'Please Issue The Product !'
+      </> ) 
+        :  'Please issue the Product ' 
             }
       {/* </VStack> */}
 
-      <HStack mt={5}>
+       <HStack mt={5}>
         <Table variant="simple">
           {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
           <Thead>
@@ -237,8 +240,9 @@ export default function Consumption(props) {
             ))}
           </Tbody>
         </Table>
-      </HStack>
+      </HStack> 
       
-    </Box> 
+    </Box> : <Center color={'gray.300'}> <FaBoxOpen />&nbsp;Nothing To Preview </Center>}
+    </> 
   );
 }

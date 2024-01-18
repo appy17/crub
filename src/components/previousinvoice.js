@@ -22,7 +22,6 @@ import {
 } from "react-icons/io5";
 export default function Previousinvoice() {
   const location = useLocation();
-  console.log(location.pathname);
   const dbpath1 = "http://localhost/backend/";
   const [invoiceD, setInvoiceD] = useState([]);
   const loadInvoiceData = async () => {
@@ -38,7 +37,7 @@ export default function Previousinvoice() {
   useEffect(() => {
     loadInvoiceData();
   }, []);
-  console.table(invoiceD);
+  console.log(invoiceD ? invoiceD : '');
   
   return (
     <>
@@ -83,7 +82,7 @@ export default function Previousinvoice() {
       {/* <Center mt={'10%'}><Heading color={'#141414'} fontSize={'md'} fontWeight={'hairline'}>Nothing To See | Under Developement</Heading>
                 <Spinner color='black' ml={10}/></Center> */}
 
-      {invoiceD.length == 0 ? (
+      {invoiceD == '' ? (
         <Center mt={"10%"}>
           <Heading color={"#141414"} fontSize={"md"} fontWeight={"hairline"}>
             {" "}
@@ -93,7 +92,7 @@ export default function Previousinvoice() {
         </Center>
       ) : (
         <Flex direction={"column"} p={4} gap={6}>
-          {invoiceD.map((i) => (
+          {invoiceD?.map((i) => (
             <Box
               w={"60%"}
               h={"fit-content"}

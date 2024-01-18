@@ -1,4 +1,4 @@
-import { Box, Button, Center, Select, Show, Stack } from '@chakra-ui/react'
+import { Box, Button, Center, Link, Select, Show, Stack, Text } from '@chakra-ui/react'
 import React, { useState } from 'react'
 import { EmailIcon , ArrowForwardIcon } from '@chakra-ui/icons'
 import { Route, Link as RouteLink, useLocation} from 'react-router-dom'
@@ -102,7 +102,10 @@ export default function Side() {
 </Stack>
 
       </Center>
-     
+     <Center>
+<Text color={'gray.600'} fontSize={'small'} mt={15}>CopyRight @2024 | <Link href='https://royalswebtech.com/'>Royals Webtech</Link></Text>
+
+     </Center>
     </Box>
     <Button color={'white'} bg={'black'}
     _hover={{bg:'#121212'}}

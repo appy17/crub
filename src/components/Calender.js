@@ -172,7 +172,7 @@ function DailyTimetable() {
   const handleCellClick = (time, employee) => {
     // Check if the <Td> is disabled
     // if (
-    //   data.some(
+    //   data.some(  
     //     (item) =>
     //       item.hour === time &&
     //       item.employee === employee &&

@@ -8,16 +8,17 @@ import { Box, Divider, Flex, FormLabel, HStack, Input, Select, Text , Table,
   TableCaption,
   TableContainer,
   Button,
-  useToast, } from '@chakra-ui/react'
+  useToast,
+  Center, } from '@chakra-ui/react'
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-
+import { FaBoxOpen } from "react-icons/fa";
 export default function Issue(props) {
   const [Edata, setEData] = useState([]);
   const dbpath1 = "http://localhost/backend/";
  const toast = useToast();
 
-  const {id , size} = props.data;
+  const {id , size , name , type} = props.data;
   const loadEmployeeData = async () => {
     try {
       const response = await axios.get(dbpath1 + "getEmployeedata.php");
@@ -40,6 +41,7 @@ export default function Issue(props) {
     
     const issuData = {
       date: datei == '' ? new Date().toISOString().split('T')[0] : datei,
+      p_name : datei == '' ? new Date().toISOString().split('T')[0] : datei + '|' + name , 
       quantity : qty,
       issued_by : usedBy,
       issued_to : usedTo,
@@ -64,7 +66,9 @@ export default function Issue(props) {
     .catch((error) => {
       console.error("Error creating data:", error);
     });
+
   }
+
   const [data, setdata] = useState([]);
 const fetchData = async () => {
   try {
@@ -79,17 +83,18 @@ const fetchData = async () => {
 
 useEffect(() => {
   fetchData();
-}, [id ]);
-console.log(id);  
+}, [id ]); 
 const [disabled , setDisabled] = useState(true);
 useEffect(() => {
   setDisabled(datei === "" || usedBy === "" || usedTo === "" || qty === '');
 }, [datei, usedBy, usedTo , qty]);
+let checkOpen = data?.some((i)=> i.isDone == 0);
+console.log(checkOpen);
 
-
-console.log(data)
+// console.log(data ? data[0] : '')
   return (
-    <Box w={'100%'}>
+    <>
+    {type == 'c' ? <Box w={'100%'}>
       <HStack 
         gap={'7px'} color={'black'}><Flex flexDirection={"column"}>
                   <FormLabel color={"gray.600"} fontWeight={"light"}  fontSize={'sm'}>
@@ -162,8 +167,11 @@ console.log(data)
       </HStack>
                 <Flex flexDirection={"column"} >
                 
-                  <Button onClick={insertData} colorScheme='green' mt={7} alignSelf={'flex-end'}
-                   isDisabled={disabled}> Submit</Button>
+                  <Button 
+                 onClick={ insertData }
+                  colorScheme='green' mt={7} alignSelf={'flex-end'}
+                   isDisabled={disabled}
+                   > Submit</Button>
                 </Flex>
 
      
@@ -203,6 +211,7 @@ console.log(data)
   </Table>
 
      </HStack>
-    </Box>
+    </Box>  : <Center color={'gray.300'}> <FaBoxOpen />&nbsp;Nothing To Preview </Center>}
+    </>
   )
 }

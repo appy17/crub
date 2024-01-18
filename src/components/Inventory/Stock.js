@@ -8,10 +8,42 @@ import { Box, Divider, Flex, FormLabel, HStack, Input, Select, Text , Table,
   TableCaption,
   TableContainer,
   VStack,
-  Button, } from '@chakra-ui/react'
-import React from 'react'
+  Button,
+  useStatStyles,
+  useToast, } from '@chakra-ui/react'
+import axios from 'axios';
+import React, { useState } from 'react'
 
-export default function Stock() {
+export default function Stock(props) {
+  const { id } = props.data;
+  const [type , settype] = useState('');
+  const [s_type , setStype] = useState('');
+  const [qty,setQty]=useState(0);
+  const [datei,setdatei]=useState(0);
+const toast = useToast();
+  const insertData = async () => {
+    const Stock_data = {
+      product_id: id, // Assuming 'id' is the product ID received as a prop
+      type_: type,
+      st_type: s_type,
+      qty_: qty, // You need to manage selectedService in your component state
+      date: datei == '' ? new Date().toISOString().split('T')[0] : datei,
+    };
+    axios
+      .post("http://localhost/backend/addStock.php", Stock_data)
+      .then((response) => {
+        console.log("Data created:", response.data);
+        toast({
+          position: "top-right",
+          title: "Added !",
+          status: "success",
+        });
+        // You might want to do something after a successful submission
+      })
+      .catch((error) => {
+        console.error("Error creating data:", error);
+      });
+  };
   return (
     <Box w={'100%'}>
       
@@ -26,11 +58,12 @@ export default function Stock() {
                     placeholder="Select"
                     border={"1px solid gray"}
                       // w="full"
+                      value={type}
+                      onChange={(e)=>{settype(e.target.value)}}
                     _hover={{ border: "1px solid black" }}
                   >
-                    <option value="option1">Option 1</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
+                    <option value="In">In</option>
+                    {/* <option value="option3">Option 3</option> */}
                   </Select>
                 </Flex>
                 <Flex flexDirection={"column"} width="50%">
@@ -43,12 +76,15 @@ export default function Stock() {
                     placeholder="Select"
                     _pl
                     border={"1px solid gray"}
-
+                    value={s_type}
+                    onChange={(e)=>{setStype(e.target.value)}}
                     _hover={{ border: "1px solid black" }}
                   >
-                    <option value="option1">Option 1</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
+                    <option value="New Stock">New Stock</option>
+                    <option value="Adjustment">Adjustment</option>
+                    <option value="Internal Use">Internal Use</option>
+
+                    
                   </Select>
                 </Flex>
       </HStack>
@@ -67,6 +103,8 @@ export default function Stock() {
                     _hover={{ border: "1px solid black" }}
                     cursor={"pointer"}
                     color={"#121212"}
+                    value={qty}
+                    onChange={(e)=>{setQty(e.target.value)}}
                   />
                 </Flex>
                 <Flex flexDirection={"column"} width="50%">
@@ -83,6 +121,7 @@ export default function Stock() {
                     _hover={{ border: "1px solid black" }}
                     cursor={"pointer"}
                     color={"#121212"}
+                    isDisabled
                   />
                 </Flex>
       </HStack>
@@ -104,6 +143,8 @@ export default function Stock() {
                     cursor={"pointer"}
                     color={"#121212"}
                     bg='#d2d2d2'
+                    value={datei}
+                    onChange={(e)=>{setdatei(e.target.value)}}
 
                   />
                 </Flex>
@@ -122,6 +163,7 @@ export default function Stock() {
                     cursor={"pointer"}
                     color={"#121212"}
                     bg='#d2d2d2'
+                    isDisabled
 
                   />
                 </Flex>
@@ -129,7 +171,7 @@ export default function Stock() {
       {/* </Flex> */}
                 <Flex flexDirection={"column"} width="100%">
                 
-                  <Button colorScheme='green' mt={7} alignSelf={'flex-end'}> Submit</Button>
+                  <Button colorScheme='green' mt={7} alignSelf={'flex-end'} onClick={insertData}> Submit</Button>
                 </Flex>
     </Box>
   )

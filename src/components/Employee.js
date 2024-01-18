@@ -80,12 +80,14 @@ console.log(Edata);
               <Th>Experience</Th>
               <Th>DOB</Th>
               <Th>Salary</Th>
+              <Th>Sales</Th>
+
             </Tr>
           </Thead>
           <Tbody>
             {filterData.map((item) => (
               <Tr p={10}>
-                <Td color={"black"}>{item.employee_id}</Td>
+                <Td color={"black"}>{item.id}</Td>
                 <Td color={"black"}>{item.name}</Td>
                 <Td color={"black"}>{item.ph_number}</Td>
                 <Td color={"black"}>{item.category}</Td>
@@ -93,7 +95,9 @@ console.log(Edata);
                 <Td color={"black"} fontSize={"small"} fontFamily={"monospace"}>
                   {item.date_of_birth}
                 </Td>
-                <Td color={"black"}>{"₹ " + Number(item.salary)}</Td>
+                <Td color={"black"}>{"₹ " + Number(item.salary).toFixed(0)}</Td>
+                <Td color={"black"}>{"₹ " + Number(item.sales == '' ? 0 : item.sales)}</Td>
+
               </Tr>
             ))}
           </Tbody>
