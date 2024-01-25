@@ -29,21 +29,11 @@ export default function Consumption(props) {
   const dbpath1 = "http://localhost/backend/";
   const { id, unit , size , name  , type} = props.data;
   const toast = useToast();
-  const [Edata, setEData] = useState([]);
   const [servicedata, setServiceData] = useState([]);
+const [disabled , setDisabled] = useState(true);
 
-  const loadEmployeeData = async () => {
-    try {
-      const response = await axios.get(dbpath1 + "getEmployeedata.php");
-      const Employeedata = response.data.phpresult;
-      setEData(Employeedata);
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  };
-  useEffect(() => {
-    loadEmployeeData(); // Call the loadData function when the component mounts
-  }, []);
+
+  
   const loadServiceeData = async () => {
     try {
       const response = await axios.get(dbpath1 + "getServicedata.php");
@@ -86,6 +76,9 @@ export default function Consumption(props) {
       });
   };
   // fetch_data
+  useEffect(() => {
+    setDisabled(usedBy === "" || measurement === "" || selectedService === "" );
+  }, [ usedBy, measurement , selectedService]);
   console.log(usedBy);
   const [data, setdata] = useState([]);
   const fetchData = async () => {
@@ -199,6 +192,8 @@ export default function Consumption(props) {
             cursor={"pointer"}
             color={"#121212"}
             value={unit}
+            pointerEvents={'none'}
+            
           />
         </Flex>
         <Flex flexDirection={"column"} width="39%">
@@ -207,6 +202,7 @@ export default function Consumption(props) {
             mt={7}
             alignSelf={"flex-end"}
             onClick={insertData}
+            isDisabled={disabled}
           >
             {" "}
             Submit

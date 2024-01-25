@@ -10,14 +10,13 @@ export default function Layout() {
   const { authUser} = useAppContext();
  const navigate = useNavigate();
  const location = useLocation();
+ const local = JSON.parse(localStorage.getItem('session'));
+useEffect(()=>{
+  if(!local == true){
+    navigate('/');
+  }
 
-// useEffect(()=>{
-//   if(!authUser){
-//     navigate('/');
-//   }
-
-// },[authUser , navigate , location ])
- 
+},[local])
 
   return (
     <Box bg={'white'}>

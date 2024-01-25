@@ -34,7 +34,7 @@ export default function Issue(props) {
   const [usedBy, setUsedBy] = useState("");
     const [usedTo, setUsedTo] = useState("");
     const [qty , setQty] = useState(null);
-    const [datei , setdatei] = useState('');
+    const [datei , setdatei] = useState(new Date().toISOString().split('T')[0]);
 
 
   const insertData = () => {

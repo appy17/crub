@@ -1,19 +1,32 @@
-import { Box, Button, Text , Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverHeader,
-  PopoverBody,
-  PopoverFooter,
-  PopoverArrow,
-  PopoverCloseButton,
-  PopoverAnchor,
-  Tag, } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Text,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Avatar,
+  useDisclosure,
+  Tag,
+} from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { TbScissorsOff } from "react-icons/tb";
 import { useAppContext } from "../components/context/AppContext";
+import Notifications from "./Notifications";
 
 export default function Nav() {
-  const { logout} = useAppContext();
+  const { logout } = useAppContext();
+//  const storage = JSON.parse(localStorage.getItem('#data'))
+ const userName = localStorage.getItem('name');
+  const { isOpen, onOpen, onClose } = useDisclosure()
   // const [ipAdd, setIp] = useState('undefined');
 
   // const fetchIpAddress = async () => {
@@ -56,18 +69,48 @@ export default function Nav() {
         <Text> Krub Salon</Text>
       </Button>
       {/* <Tag colorScheme="red" color={'red'} >You IP Address : {ipAdd}</Tag> */}
-      <Popover>
-  <PopoverTrigger>
-    <Button float={'right'} 
-       mt={2} color={'red'} bg={'red.50'}>Log Out</Button>
-  </PopoverTrigger>
-  <PopoverContent >
-    <PopoverArrow />
-    <PopoverCloseButton />
-    <PopoverHeader>Really Want to Logout ? </PopoverHeader>
-    <PopoverBody><Button colorScheme="red" onClick={logout}>Exit</Button></PopoverBody>
-  </PopoverContent>
-</Popover>
+      {/*  */}
+     <Menu>
+  <MenuButton as={Button} float={"right"} m={3} color={'Black'} textAlign={'center'}>
+  <Avatar src='https://bit.ly/broken-link'  name={userName}/> 
+  </MenuButton>
+  <MenuList>
+    <MenuItem><Tag p={3}>{userName}</Tag></MenuItem>
+    <MenuItem>
+      <Tag  onClick={onOpen} p={3} colorScheme="red">
+        Log Out
+      </Tag>
+      </MenuItem>
+  </MenuList>
+</Menu>
+{/* logout alert dailog ! */}
+<AlertDialog
+        isOpen={isOpen}
+      
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+              LogOut 
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure? You can't undo this action afterwards !
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button  onClick={onClose}>
+                Cancel
+              </Button>
+              <Button colorScheme='red' onClick={logout} ml={3}>
+                LogOut
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+<Notifications/>
     </Box>
   );
 }

@@ -12,9 +12,11 @@ export const AppProvider = ({ children }) => {
   const [selectedDate, setSelectedDate] = useState(null);
  const [selectdId , setselectedId] = useState('');
  const [stylist , setStylist] = useState([]);
- const [access , setAccess] = useState()
+ const [access , setAccess] = useState('')
  const [authUser , setauthUser] = useState(false);
  const [loading, setLoading] = useState(false);
+ const [isAdmin , setAdmin] = useState(false);
+ const [userName, setUsername] = useState('');
 //  const navigate = useNavigate();
   const updateClientData = (data) => {
     setClientData(data);
@@ -39,7 +41,6 @@ export const AppProvider = ({ children }) => {
       );
       const data = response.data.phpresult;
       setAccess(data);
-      //   console.log(data);
     } catch (error) {
       console.error("Error loading data:", error);
     }
@@ -47,18 +48,40 @@ export const AppProvider = ({ children }) => {
 
   useEffect(() => {
     loadData();
+    const storedSession = JSON.parse(localStorage.getItem('session'));
+    if (storedSession) {
+      setauthUser(true);
+    }
   }, []);
-//  console.log(access ? access[0].type_access : 'undefinde');
+console.log('access' , access)
   const  login =  (id,key) => {
-    let id_ =  access ? access[0].defined_id : 'undefinde'
-    let key_ = access ? access[0].key_secret : 'undefinde'
-    let type_ = access ? access[0].type_access : 'undefinde'
+    const resData = access.filter((item) => item.defined_id === id);
+    let id_ =  resData ? resData[0].defined_id : 'undefinde'
+    let key_ = resData ? resData[0].key_secret : 'undefinde'
+    let type_ = resData ? resData[0].type_access : 'undefinde'
     try {
       // Set loading to true when starting the login request
       setLoading(true);
-    if(id == id_ && key == key_){
+      if (!access){
+        setLoading(true)
+        setauthUser(false);
+        toast({
+          position: 'top',
+          title: 'Server Problem',
+          description: 'Please Contact Developer !',
+          status: 'warning',
+          duration: 9000,
+          isClosable: true,
+        });
+      }
+      
+      else if(id == id_ && key == key_){
       setauthUser(true);
       // navigate('/calender')
+      type_ == 'Admin' ? setAdmin(true) : setAdmin(false);
+      localStorage.setItem('session', JSON.stringify(true));
+      localStorage.setItem('name', type_);
+      setUsername(type_);
       toast({
         position: 'top',
         title: 'Logged In',
@@ -68,20 +91,7 @@ export const AppProvider = ({ children }) => {
         isClosable: true,
       });
       setLoading(false);
-
-      
-    }
-    else if (!access){
-      setLoading(true)
-      setauthUser(false);
-      toast({
-        position: 'top',
-        title: 'Server Problem',
-        description: 'Please Contact Developer !',
-        status: 'warning',
-        duration: 9000,
-        isClosable: true,
-      });
+     
     }
     else{
       setauthUser(false);
@@ -110,8 +120,10 @@ export const AppProvider = ({ children }) => {
       duration: 9000,
       isClosable: true,
     });
+    localStorage.setItem('session' , false);
+    localStorage.setItem('name' , null)
+   
   } 
-
   return (
     <AppContext.Provider
       value={{
@@ -125,6 +137,8 @@ export const AppProvider = ({ children }) => {
         logout,
         loading,
         updateSelectedid,
+        isAdmin,
+        userName,
         // selectdData,
         // updateSelectedData,
         updateStylist,

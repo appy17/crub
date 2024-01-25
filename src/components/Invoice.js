@@ -3,6 +3,9 @@ import {
   Button,
   Center,
   Checkbox,
+  Editable,
+  EditableInput,
+  EditablePreview,
   FormLabel,
   Grid,
   GridItem,
@@ -32,15 +35,17 @@ import {
   Toast,
   Tr,
   VStack,
+  extendTheme,
   useToast,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { SlCalender } from "react-icons/sl";
 import { IoClose } from "react-icons/io5";
 import { FaSort } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAppContext } from "./context/AppContext";
+import { switchTheme } from "./switchTheme";
 export default function Invoice() {
   const [displatS, setdisplayS] = useState("none");
   const [display2, setdisplay2] = useState("none");
@@ -161,7 +166,7 @@ export default function Invoice() {
     selectedDate,
     updateSelectedData,
     selectdId,
-    stylist,
+    stylist
   } = useAppContext();
   // console.log(serviceDatas);
   // let stylist1 = [serviceDatas.split('|')[0] , serviceDatas.split('|')[1]];
@@ -457,15 +462,7 @@ export default function Invoice() {
     });
   }, []);
   // search logic services 
-  const [filterData , setFilteredData] = useState([]);
-  const [searchService , setsearchService] = useState('');
-  useEffect(()=>{
-    setFilteredData(
-      servicedata.filter((user)=>
-      user.name_service.toLowerCase().includes(searchService.toLowerCase())
-      )
-    );
-  },[searchService , servicedata]);
+  
   const handleChangeAmount = (e) => {
     setpaid(e.target.value)
 //  setbalance(totalFinal2 - (e.target.value == '' ? paid : e.target.value))
@@ -477,6 +474,43 @@ export default function Invoice() {
     // setpaid(totalFinal2);
     // setbalance(totalFinal2 - paid);
   },[totalFinal , totalFinal2, paid ])
+  const [dataP , setDataP] = useState([]);
+  const PloadData = async () => {
+    try {
+      const response = await axios.get("http://localhost/backend/getProducts.php");
+      const data = response.data.phpresult;
+      setDataP(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
+
+  useEffect(() => {
+    PloadData();
+  }, []);
+  const [selectedMenuItem, setSelectedMenuItem] = useState('Services');
+
+  const handleMenuItemClick = (value) => {
+    setSelectedMenuItem(value);
+  };
+  const [filterData , setFilteredData] = useState([]);
+  const [searchService , setsearchService] = useState('');
+  useEffect(()=>{
+    if(selectedMenuItem === 'Services'){
+    setFilteredData(
+      servicedata.filter((user)=>
+      user.name_service.toLowerCase().includes(searchService.toLowerCase())
+      )
+    );
+    }else if(selectedMenuItem === 'Products'){
+      setFilteredData(
+        dataP.filter((user)=>
+      user.name.toLowerCase().includes(searchService.toLowerCase())))
+    }
+  },[searchService , servicedata , dataP , selectedMenuItem]);
+  
+
 
   return (
     <>
@@ -672,8 +706,11 @@ export default function Invoice() {
                     const serviceData = servicedata.find(
                       (data) => data.name_service === obj.checkboxValue
                     );
+                    const pData = dataP.find(
+                      (data) => data.name === obj.checkboxValue
+                    );
 
-                    if (serviceData) {
+                    if (serviceData || pData) {
                       // const editedService = editedValues[obj.checkboxValue];
                       // // console.log(editedService);
                       // const InitialTotal =
@@ -683,11 +720,11 @@ export default function Invoice() {
                       //     : "₹" + Number(serviceData.price);
                       const editedService = editedValues[obj.checkboxValue];
                       const InitialTotal = editedService
-                        ? serviceData.price - editedService.value
-                        : Number(serviceData.price);
+                        ? serviceData ? serviceData.price : pData.price - editedService.value
+                        : Number(serviceData ? serviceData.price : pData.price);
 
                       totalFinal2 = InitialTotal + totalFinal2;
-                      const prevInitialTotal = Number(serviceData.price);
+                      const prevInitialTotal = Number(serviceData ? serviceData.price : pData.price);
                       totalFinal = prevInitialTotal + totalFinal;
                       
 
@@ -700,12 +737,15 @@ export default function Invoice() {
                         >
                           <Td>{obj.radioValue}</Td>
                           <Td>{obj.checkboxValue}</Td>
-                          <Td textAlign={"center"}>1</Td>
+                          <Td textAlign={"center"}><Editable defaultValue='Take some chakra'>
+  <EditablePreview />
+  <EditableInput />
+</Editable></Td>
                           <Td>{"₹" + prevInitialTotal}</Td>
 
                           <Td
                             onDoubleClick={() =>
-                              handleDoubleClick(obj.checkboxValue)
+                               handleDoubleClick(obj.checkboxValue) 
                             }
                             cursor={"pointer"}
                           >
@@ -779,11 +819,12 @@ export default function Invoice() {
                   rightIcon={<FaSort />}
                   m={3}
                 >
-                  Services
+                  {selectedMenuItem}
                 </MenuButton>
                 <MenuList>
-                  <MenuItem>Service_name</MenuItem>
-                </MenuList>
+        <MenuItem onClick={() => handleMenuItemClick('Services')} >Services</MenuItem>
+        <MenuItem onClick={() => handleMenuItemClick('Products')}>Products</MenuItem>
+      </MenuList>
               </Menu>
               <Menu>
                 <MenuButton
@@ -869,7 +910,7 @@ export default function Invoice() {
               </Box> */}
               <Box textAlign={"left"} display={"felx"} maxH={"28dvh"}  overflowY={'scroll'}
               //  boxShadow={'0px 0px 5px gray'}
-              // border={'1px solid #c4c4c4'}
+              // border={'3px solid green'}
               p={3}
                css={{
                 '&::-webkit-scrollbar': {
@@ -895,7 +936,7 @@ export default function Invoice() {
                   {filterData.map((item, index) => {
                     const matchObject = arrayOfObjects
                       .map((i) => i.checkboxValue)
-                      .includes(item.name_service);
+                      .includes(selectedMenuItem === 'Services' ? item.name_service : item.name);
                     //  const mo2 = matchObject.includes(item.name_service);
                     // console.log("mathcObject" + ":" + matchObject);
 
@@ -908,12 +949,13 @@ export default function Invoice() {
                           textDecoration={matchObject ? "line-through" : ""}
                           transition={"ease 0.3s"}
                           // pos={'absolute'}
+                          textTransform={'uppercase'}
                         >
-                          {item.name_service.toUpperCase()}
+                          {selectedMenuItem === 'Services' ? item.name_service : item.name }
                         </Text>
                         {/* <Box pos={'relative'} left={"40%"}> */}
                           <Checkbox
-                            value={item.name_service}
+                            value={selectedMenuItem === 'Services' ? item.name_service : item.name}
                             border={"#121212"}
                             colorScheme={matchObject ? "red" : "teal"}
                             opacity={matchObject ? 0.8 : ""}
@@ -921,7 +963,7 @@ export default function Invoice() {
                               matchObject
                                 ? true
                                 : value.checkboxesValue.includes(
-                                    item.name_service
+                                    selectedMenuItem === 'Services' ? item.name_service : item.name
                                   )
                             }
                             onChange={
@@ -943,7 +985,7 @@ export default function Invoice() {
                                       setbtnAlert("");
                                     }, 1200);
                                   }
-                                : () => handleCheckboxChange(item.name_service)
+                                : () => handleCheckboxChange(selectedMenuItem === 'Services' ? item.name_service : item.name)
                             }
                             // pos={'abs'} left={'40%'}
                             // pointerEvents={matchObject ? 'none' : ''}

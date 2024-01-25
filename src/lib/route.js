@@ -20,6 +20,7 @@ import InvoiceBill from "../components/pdf/invoicepdf";
 import Test from "../components/RoughWork";
 import Products from "../components/Inventory/Products";
 import StockLedger from "../components/Inventory/StockLedger";
+import Settings from "../components/settings";
 // import { Children } from "react";
 export const ROOT = "/";
 export const router = createBrowserRouter([
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
         {path:'employee' , element : <Employee/>},
         {path:'test' , element : <Test/>},
         {path:'invoice' , element : <Invoice/>},
+        {path:'settings' , element : <Settings/>},
         {path:'invoice-view' , element : <Previousinvoice/>},
         {path:'invoicegernrate/:id' , element:<InvoiceBill/>}
 

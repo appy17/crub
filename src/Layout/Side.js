@@ -1,5 +1,5 @@
 import { Box, Button, Center, Link, Select, Show, Stack, Text } from '@chakra-ui/react'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { EmailIcon , ArrowForwardIcon } from '@chakra-ui/icons'
 import { Route, Link as RouteLink, useLocation} from 'react-router-dom'
 import {SlCalender} from 'react-icons/sl'
@@ -20,16 +20,19 @@ import {FaUsersLine , FaAngleLeft, FaAngleRight}from 'react-icons/fa6';
 import { LiaFileInvoiceSolid } from "react-icons/lia";
 import { RiUserStarFill } from "react-icons/ri";
 import { FaLock } from 'react-icons/fa'
+import { TbSettingsCog } from "react-icons/tb";
+import { useAppContext } from '../components/context/AppContext'
 // import Calenderr from '../components/Calender'
 export default function Side() {
   const [dis , setdis] = useState('visible');
   const [dis1 , setdis1] = useState('none');
   const [margin , setmargin] = useState('0');
   const location = useLocation();
- 
-
-  
-
+  // const {isAdmin} =  useAppContext();
+ const Admin = localStorage.getItem('name');
+ const isAdmin = Admin == 'Admin'
+const current = new Date();
+const year = current.getFullYear();
   return (
     <>
     <Box  w={'fit-content'} h={'92vh'} 
@@ -79,9 +82,8 @@ export default function Side() {
    as={RouteLink} to='/employee'>
     Employee
   </Button>
-  <Button leftIcon={<LiaFileInvoiceSolid />} as={RouteLink} to='/test
-  'color={'black'}  variant='ghost'>
-    Test page
+  <Button leftIcon={<TbSettingsCog />} as={RouteLink} to='/settings'color={'black'}  variant='ghost' display={isAdmin ? 'flex' : 'none'}>
+    Settings
   </Button>
   <Button leftIcon={<EmailIcon />} color={'black'} variant='ghost'>
     Email
@@ -103,7 +105,7 @@ export default function Side() {
 
       </Center>
      <Center>
-<Text color={'gray.600'} fontSize={'small'} mt={15}>CopyRight @2024 | <Link href='https://royalswebtech.com/'>Royals Webtech</Link></Text>
+<Text color={'gray.600'} fontSize={'small'} mt={15}>&copy;{year} | <Link href='https://royalswebtech.com/'>Royals Webtech</Link></Text>
 
      </Center>
     </Box>
@@ -122,7 +124,7 @@ export default function Side() {
       setmargin('0');
       
      }}
-     > {location.pathname == '/' ? <FaLock/> : <FaAngleRight/>}</Button>
+     > <FaAngleRight/></Button>
     </>
   )
 }

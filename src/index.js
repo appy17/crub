@@ -4,6 +4,7 @@ import App from './App';
 import { AppProvider } from './components/context/AppContext';
 import { RouterProvider } from "react-router-dom";
 import { router } from "./lib/route";
+import { ChakraProvider, ColorModeProvider } from '@chakra-ui/react';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -11,10 +12,17 @@ root.render(
   <React.StrictMode>
     <AppProvider>
      {/* <RouterProvider router={router}> */}
-
+     <ChakraProvider>
+      <ColorModeProvider
+      options={{
+        initialColorMode: 'dark',
+        useSystemColorMode: false,
+      }}
+    >
       <App/>
     {/* </RouterProvider> */}
-
+ </ColorModeProvider>
+ </ChakraProvider>
     </AppProvider>
   </React.StrictMode>
 );

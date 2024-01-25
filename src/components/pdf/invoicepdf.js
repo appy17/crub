@@ -109,40 +109,38 @@ const InvoiceBill = () => {
   const [splitE, setSplitE] = useState("");
   const [splitV, setSplitV] = useState(0);
   const toast = useToast();
-  const [sty2 , setsty2] = useState('')
-  const [price , setprice] = useState(0)
-  const [price2 , setprice2] = useState(0)
+  const [sty2, setsty2] = useState("");
+  const [price, setprice] = useState(0);
+  const [price2, setprice2] = useState(0);
   useEffect(() => {
     setprice(Number(splitV / 2));
     setprice2(Number(splitV / 2));
   }, [splitV]);
 
   const insertData = () => {
-    
     const splitData = {
-     stylist : splitE ,
-     stylistS : sty2,
-     price : splitV - price,
-     priceS :price2
-
-    }
+      stylist: splitE,
+      stylistS: sty2,
+      price: splitV - price,
+      priceS: price2,
+    };
     axios
-    .post("http://localhost/backend/updateSplit.php", splitData)
-    .then((response) => {
-      console.log("Data created:", response.data);
-      onClose()
-       toast({
-        position:'top-right',
-        title:'Added !',
-        status:'success'
-       })
-      // You might want to do something after a successful submission
-    })
-    .catch((error) => {
-      console.error("Error creating data:", error);
-    });
-  }
-  console.log('price' , price)
+      .post("http://localhost/backend/updateSplit.php", splitData)
+      .then((response) => {
+        console.log("Data created:", response.data);
+        onClose();
+        toast({
+          position: "top-right",
+          title: "Added !",
+          status: "success",
+        });
+        // You might want to do something after a successful submission
+      })
+      .catch((error) => {
+        console.error("Error creating data:", error);
+      });
+  };
+  console.log("price", price);
   return (
     <ChakraProvider>
       <CSSReset />
@@ -384,31 +382,58 @@ const InvoiceBill = () => {
                   <Modal isOpen={isOpen} onClose={onClose}>
                     <ModalOverlay />
                     <ModalContent>
-                      <ModalHeader>Amount :&nbsp;<Tag color={"grenn"} colorScheme='teal'>{splitV}</Tag></ModalHeader>
+                      <ModalHeader>
+                        Amount :&nbsp;
+                        <Tag color={Number(price) + Number (price2) > Number(splitV) ? 'red' : "grenn"} colorScheme="teal">
+                          {Number(price) + Number (price2) > Number(splitV) ? `Price Should below ${splitV}`:splitV}
+                        </Tag>
+                      </ModalHeader>
                       <ModalCloseButton />
                       <ModalBody>
-                        
-                        <Box display={'flex'} justifyContent={'space-between'}><Select value={splitE}>
-                          <option>{splitE}</option>
-                        </Select><Input color={'cyan'} border={'1px solid cyan'} _hover={{border:'1px solid cyan'}} value={price} 
-                          onChange={(e)=>{setprice(e.target.value)}}/>
+                        <Box display={"flex"} justifyContent={"space-between"}>
+                          <Select value={splitE}>
+                            <option>{splitE}</option>
+                          </Select>
+                          <Input
+                            color={"cyan"}
+                            border={"1px solid cyan"}
+                            _hover={{ border: "1px solid cyan" }}
+                            value={price}
+                            onChange={(e) => {
+                              setprice(e.target.value);
+                            }}
+                          />
                         </Box>
-                        <Box display={'flex'} justifyContent={'space-between'}>
-                        <Select placeholder="Select" value={sty2} onChange={(e)=>{setsty2(e.target.value)}}>
-                          {Edata.map((i) => (
-                            <option value={i.name} style={{ color: "white" }}>
-                              {i.name}
-                            </option>
-                          ))}
-                        </Select> <Input color={'cyan'} border={'1px solid cyan'} _hover={{border:'1px solid cyan'}} value={price2} onChange={(e)=>{setprice2(e.target.value)}}/>
+                        <Box display={"flex"} justifyContent={"space-between"}>
+                          <Select
+                            placeholder="Select"
+                            value={sty2}
+                            onChange={(e) => {
+                              setsty2(e.target.value);
+                            }}
+                          >
+                            {Edata.map((i) => (
+                              <option value={i.name} style={{ color: "white" }}>
+                                {i.name}
+                              </option>
+                            ))}
+                          </Select>{" "}
+                          <Input
+                            color={"cyan"}
+                            border={"1px solid cyan"}
+                            _hover={{ border: "1px solid cyan" }}
+                            value={price2}
+                            onChange={(e) => {
+                              setprice2(e.target.value);
+                            }}
+                          />
                         </Box>
                       </ModalBody>
 
                       <ModalFooter>
-                        <Button colorScheme="blue" mr={3} onClick={insertData}>
+                        <Button colorScheme="blue" mr={3} onClick={insertData} isDisabled={Number(price) + Number (price2) > Number(splitV) ? true : false}>
                           Add
                         </Button>
-                       
                       </ModalFooter>
                     </ModalContent>
                   </Modal>

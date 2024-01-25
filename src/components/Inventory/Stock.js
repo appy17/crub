@@ -12,14 +12,16 @@ import { Box, Divider, Flex, FormLabel, HStack, Input, Select, Text , Table,
   useStatStyles,
   useToast, } from '@chakra-ui/react'
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 export default function Stock(props) {
   const { id } = props.data;
   const [type , settype] = useState('');
   const [s_type , setStype] = useState('');
-  const [qty,setQty]=useState(0);
-  const [datei,setdatei]=useState(0);
+  const [qty,setQty]=useState("");
+  const [datei,setdatei]=useState(new Date().toISOString().split('T')[0]);
+  const [disabled , setDisabled] = useState(true);
+ 
 const toast = useToast();
   const insertData = async () => {
     const Stock_data = {
@@ -44,6 +46,9 @@ const toast = useToast();
         console.error("Error creating data:", error);
       });
   };
+  useEffect(() => {
+    setDisabled(datei === "" || type === "" || s_type === "" || qty === "");
+  }, [datei, type,s_type, qty]);
   return (
     <Box w={'100%'}>
       
@@ -171,7 +176,7 @@ const toast = useToast();
       {/* </Flex> */}
                 <Flex flexDirection={"column"} width="100%">
                 
-                  <Button colorScheme='green' mt={7} alignSelf={'flex-end'} onClick={insertData}> Submit</Button>
+                  <Button colorScheme='green' mt={7} alignSelf={'flex-end'} onClick={insertData} isDisabled={disabled}> Submit</Button>
                 </Flex>
     </Box>
   )
