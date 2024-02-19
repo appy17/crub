@@ -97,7 +97,7 @@ import {
   BsCaretDownFill,
   BsCaretUpFill,
 } from "react-icons/bs";
-import { IoIosAdd } from "react-icons/io";
+import { IoIosAdd, IoMdClock } from "react-icons/io";
 import { RiUserLocationFill } from "react-icons/ri";
 import { GrNext, GrPrevious } from "react-icons/gr";
 import { GiAlarmClock, GiCardRandom, GiMoneyStack } from "react-icons/gi";
@@ -108,7 +108,7 @@ import {
   BiAddToQueue,
 } from "react-icons/bi";
 import { IoCalendar } from "react-icons/io5";
-
+import { MdDeleteOutline, MdPunchClock } from "react-icons/md";
 import DropdownWithCheckboxes from "./util/Services";
 import Data2 from "./util/Employee";
 import { FaPhoneAlt, FaSearch, FaUser } from "react-icons/fa";
@@ -197,6 +197,7 @@ function DailyTimetable() {
     setSelectedHour(stime);
     setSelectedEmployee(semployee);
     onOpen();
+    console.log('Left Clicked Pressed')
   };
 
   // const closePopover = () => {
@@ -943,6 +944,15 @@ useEffect(()=>{
   const { updateClientData, updateServiceData, updateSelectedDate , updateSelectedid ,  updateStylist } =
     useAppContext();
 const [align , setalign] = useState(false);
+const [open3 , setOpen3] = useState(false);
+function rightClickUpdate(e){
+ e.preventDefault();
+//  console.log('Right Click Pressed')
+setOpen3(true);
+}
+function closeOpen3(){
+  setOpen3(false);
+}
   return (
     <Box p={4}>
       <Heading
@@ -1143,6 +1153,7 @@ const [align , setalign] = useState(false);
                                   ? () => handleSpecifClick(hour, iteem.name)
                                   : null
                               }
+                              onContextMenu={(e)=>{rightClickUpdate(e)}}
                             >
                               {matchingStylist.status == "scheduled" ? (
                                 <RiUserLocationFill />
@@ -1182,6 +1193,7 @@ const [align , setalign] = useState(false);
           </Tbody>
         )}
       </Table>
+      
       {/* Appointment Form */}
 
       <Modal isOpen={isModalOpen} size={"2xl"} onClose={closeModal} isCentered>
@@ -1602,7 +1614,38 @@ const [align , setalign] = useState(false);
       {/* appointmenty form finished */}
 
       {/* ------------------------------------------------------------------*************------------------------------------------------------------------------------- */}
-
+{/* Update apppointment form */}
+<Modal isOpen={open3} onClose={closeOpen3} >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Update Appointment</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {/* <Lorem count={2} /> */}
+          </ModalBody>
+           <Center> 
+            <label><IoMdClock/></label>&nbsp;<Select
+                  w={"fit-content"}
+                  placeholder='Update Time Slot ' 
+                  // mb={2}
+                  fontWeight={"medium"}
+                  borderRightRadius={"8px"}
+                  // onChange={handleTimeChange}
+                  // value={selectedTime}
+                  // maxH={'100px'}
+                > 
+                  {TimeSlots.map((time) => (
+                    <option value={time}>{time}</option>
+                  ))}
+                </Select></Center>
+          <ModalFooter>
+            <Button colorScheme='purple' mr={3} onClick={closeOpen3}>
+              Update
+            </Button>
+            <Button variant='ghost' colorScheme='red'><MdDeleteOutline/></Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       {/* appointment details */}
 
       <Modal isOpen={isOpen} onClose={onClose} size={"4xl"}>

@@ -39,11 +39,16 @@ import StockHistory from "./StockHistory";
 
 const Products = () => {
   const [data , setData] = useState([]);
+  const [categories , setCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const loadData = async () => {
     try {
       const response = await axios.get("http://localhost/backend/getProducts.php");
       const data = response.data.phpresult;
       setData(data);
+      const uniqueCategories = [...new Set(data.map((product) => product.category))];
+      setCategories(uniqueCategories);
+
       console.log(data);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -53,8 +58,8 @@ const Products = () => {
   useEffect(() => {
     loadData();
   }, []);
-  const categories =  [...new Set(data.map((product) => product.category))];
-  console.log(categories)
+  const optcategories =  [...new Set(data.map((product) => product.category))];
+  console.log('categorisenew' , categories)
   const location = useLocation();
   const [value, setvalue] = useState([]);
   const [component, setcomponent] = useState("Issue");
@@ -63,7 +68,28 @@ const Products = () => {
   const handleTableItemClick = (category) => {
     setClickedCategory(category);
   };
-
+  // const selectCategory = (selectdCategory) =>{
+  //   const uniqueCategories = [...new Set(data.map((product) => product.category === selectdCategory))];
+  //  setCategories(uniqueCategories);
+  // }
+  const selectCategory = (selectedCategory) => {
+    if (!selectedCategory) {
+      // If no category is selected, show all categories
+      const allCategories = [...new Set(data.map((product) => product.category))];
+      setCategories(allCategories);
+    } else {
+      // Filter data based on the selected category
+      const filteredData = data.filter((product) => product.category === selectedCategory);
+  
+      // Update categories state with the filtered data
+      const uniqueCategories = [...new Set(filteredData.map((product) => product.category))];
+      setCategories(uniqueCategories);
+    }
+  };
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+  useEffect(()=>{console.log('searchKey' , searchTerm)},[searchTerm])
   return (
     <>
       <Box
@@ -140,6 +166,8 @@ const Products = () => {
                     _hover={{ border: "1px solid black" }}
                     cursor={"pointer"}
                     color={"#121212"}
+                    value={searchTerm}
+                    onChange={handleSearch}
                   />
                 </Flex>
                 <Flex flexDirection={"column"}>
@@ -147,13 +175,14 @@ const Products = () => {
                     Category
                   </FormLabel>
                   <Select
-                    placeholder="Select option"
+                    placeholder="All"
                     border={"1px solid gray"}
                     _hover={{ border: "1px solid black" }}
+                   onChange={(e)=>{selectCategory(e.target.value)}}
+
                   >
-                    <option value="option1">Option 1</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
+                    {optcategories.map((i)=> (<option value={i} style={{color:'white'}}>{i}</option>))}
+                   
                   </Select>
                 </Flex>
                 <Flex flexDirection={"column"}>
@@ -253,7 +282,7 @@ const Products = () => {
                             <AccordionIcon />
                           </AccordionButton>
                         </h2>
-                        <AccordionPanel p={0} maxW={'inherit'}>
+                        <AccordionPanel p={0} maxW={'inherit'} >
                         <Table variant='simple'>
           <Thead borderBottom='1px solid red'>
             <Tr>

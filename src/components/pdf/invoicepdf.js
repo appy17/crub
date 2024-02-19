@@ -158,7 +158,7 @@ const InvoiceBill = () => {
           m={2}
           id="main"
         >
-          {!data && data.invoice_id == null ? (
+          {!data && data.invoice_id && data== null ? (
             <>
               Fetching......
               <Spinner mt={"10%"} ml={"3%"} />

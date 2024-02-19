@@ -46,6 +46,7 @@ import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAppContext } from "./context/AppContext";
 import { switchTheme } from "./switchTheme";
+import Consumption from "./Inventory/Cosupmtion";
 export default function Invoice() {
   const [displatS, setdisplayS] = useState("none");
   const [display2, setdisplay2] = useState("none");
@@ -204,20 +205,42 @@ export default function Invoice() {
   {
     // console.log(selectData);
   }
-  // const toast = useToast();
+  const [selectedMenuItem, setSelectedMenuItem] = useState('Services');
+
+  const handleMenuItemClick = (value) => {
+    setSelectedMenuItem(value);
+  };
+  function getCurrentDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(today.getDate()).padStart(2, '0');
+  
+    return `${year}-${month}-${day}`;
+  }
+  const curdate = getCurrentDate() 
+  // console.log('cuDate' , curdate); 
+  console.log('selectedMenu' , selectedMenuItem)
+  console.log('selecteddate' , selectedDate)
+
   const insertData = async () => {
+    
+
+
     const invoice_data = {
       aptId: selectdId,
       invoiceID:
-        selectdId && selectedDate
-          ? `INV|${selectedDate}|KRUB|${selectdId}`
-          : `INV|${selectedDate}|KRUB|`,
+      selectedMenuItem === 'Services'
+        ? `INV|${selectedDate}|KRUB|${selectdId}`
+        : selectedMenuItem === 'Products'
+        ? `INV|${curdate}|KRUB|PROD|${idPInvoice}` // Fixed this line
+        : '',
       clientName:
         clientData === ""
           ? Cname
           : (Fclientname && Fclientname.name) || "Client Not Found",
       clientNumber: clientData !== "" ? clientData : search,
-      date: selectedDate,
+      date: selectedDate === null ? curdate : selectedDate,
       // stylistName: "your_stylist_name", // Replace with actual stylist name
       services: JSON.stringify(arrayOfObjects),
       priceD: arrayOfObjects,
@@ -226,7 +249,8 @@ export default function Invoice() {
       discountPrice: totalFinal - totalFinal2,
       paymentType: service,
       paid : paid,
-      balance : balance
+      balance : balance,
+      i_type : selectedMenuItem
     };
     axios
       .post("http://localhost/backend/addInvoice.php", invoice_data)
@@ -323,7 +347,35 @@ export default function Invoice() {
   const [arrayOfObjects, setArrayOfObjects] = useState([]);
   const [stylistArray ,  setStylistArray] = useState([]);
   console.log(arrayOfObjects);
+  const [dataP , setDataP] = useState([]);
+  const PloadData = async () => {
+    try {
+      const response = await axios.get("http://localhost/backend/getProducts.php");
+      const data = response.data.phpresult;
+      setDataP(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
 
+  useEffect(() => {
+    PloadData();
+  }, []);
+  const [invoiceD, setInvoiceD] = useState([]);
+  const loadInvoiceData = async () => {
+    try {
+      const response = await axios.get(dbpath1 + "getInvoicedata.php");
+      const data = response.data;
+      setInvoiceD(data);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
+  // console.log(invoiceD);
+  useEffect(() => {
+    loadInvoiceData();
+  }, []);
   const getServicePrice = (serviceName) => {
     const service = servicedata.find(
       (service) =>  (service.name_service === serviceName)
@@ -331,10 +383,20 @@ export default function Invoice() {
  // Return the price or 0 if not found
     return service ? Number(service.price) : 0;
   };
+  const getProductPrice = (serviceName) => {
+    const p = dataP.find(
+      (p) =>  (p.name === serviceName)
+    );
+ // Return the price or 0 if not found
+    return p ? Number(p.price) : 0;
+  };
   // const handleTagCloseClick = () => {
   //   setValue({ radioValue: '', checkboxesValue: [] });
   //   setalert('1px solid gray');
   // };
+  // lenght products invoce
+  const idPInvoice = invoiceD.filter((i) => i.invoice_type === 'Products').length;
+  console.log('LengthPInvoice' , idPInvoice)
   const handleRadioChange = (value) => {
     // let arr = [];
     setValue({ radioValue: value, checkboxesValue: [] });
@@ -358,7 +420,7 @@ export default function Invoice() {
         const selectedObject = {
           radioValue: stylistName,
           checkboxValue: serviceName,
-          price: getServicePrice(serviceName)
+          price: selectedMenuItem === 'Services' ? getServicePrice(serviceName) : getProductPrice(serviceName)
         };
   
         // Update arrayOfObjects with the new object
@@ -372,6 +434,7 @@ export default function Invoice() {
   
   // console.log(value);
   
+  // console.log('selected' , selectedMenuItem)// const toast = useToast();
   
   const handleCheckboxChange = (checkboxValue) => {
     setbtnAlert("");
@@ -418,7 +481,7 @@ export default function Invoice() {
       const selectedObject = {
         radioValue: value.radioValue,
         checkboxValue: checkboxValue,
-        price: getServicePrice(checkboxValue)
+        price: selectedMenuItem === 'Services' ?  getServicePrice(checkboxValue) : getProductPrice(checkboxValue)
       };
 
       // Add the new object to the array
@@ -474,26 +537,8 @@ export default function Invoice() {
     // setpaid(totalFinal2);
     // setbalance(totalFinal2 - paid);
   },[totalFinal , totalFinal2, paid ])
-  const [dataP , setDataP] = useState([]);
-  const PloadData = async () => {
-    try {
-      const response = await axios.get("http://localhost/backend/getProducts.php");
-      const data = response.data.phpresult;
-      setDataP(data);
-      console.log(data);
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  };
-
-  useEffect(() => {
-    PloadData();
-  }, []);
-  const [selectedMenuItem, setSelectedMenuItem] = useState('Services');
-
-  const handleMenuItemClick = (value) => {
-    setSelectedMenuItem(value);
-  };
+  
+  
   const [filterData , setFilteredData] = useState([]);
   const [searchService , setsearchService] = useState('');
   useEffect(()=>{
@@ -509,9 +554,30 @@ export default function Invoice() {
       user.name.toLowerCase().includes(searchService.toLowerCase())))
     }
   },[searchService , servicedata , dataP , selectedMenuItem]);
+  const [pData, setPData] = useState([]);
+  // const dbpath1 = "http://localhost/backend/";
+
+  const loadPData = async () => {
+    try {
+      const response = await axios.get(dbpath1 + "getSPermision.php");
+      const employeedata = response.data.phpresult;
+      
+      setPData(employeedata);
+
+      // Set the initial state based on the fetched data
   
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
 
+  useEffect(() => {
+    loadPData();
+  }, []);
+ const isGstOn = pData.some((i)=> i.status === '1');
 
+ console.log('permissionData' , pData)
+ console.log('isGstOn' , isGstOn);
   return (
     <>
     <Spinner display={servicedata.length > 0 ? 'none': 'block'} color="red"/>
@@ -737,7 +803,7 @@ export default function Invoice() {
                         >
                           <Td>{obj.radioValue}</Td>
                           <Td>{obj.checkboxValue}</Td>
-                          <Td textAlign={"center"}><Editable defaultValue='Take some chakra'>
+                          <Td textAlign={"center"}><Editable defaultValue='1'>
   <EditablePreview />
   <EditableInput />
 </Editable></Td>
@@ -1021,10 +1087,11 @@ export default function Invoice() {
                 <Text>Subtotal : {"₹" + Number(totalFinal)}</Text>
                 <Text>Discount : {"₹" + (totalFinal - totalFinal2)} </Text>
                 <Text>Net: {"₹" + totalFinal2}</Text>
-                {/* <Text>SGST(9%) : {"₹" + (totalFinal2 * 9) / 100}</Text>
-                <Text>CGST(9%) : {"₹" + (totalFinal2 * 9) / 100} </Text> */}
-                <Text>SGST(9%) : {"₹" + 0}</Text>
-                <Text>CGST(9%) : {"₹" + 0} </Text>
+               {isGstOn ? ( <><Text>SGST(9%) : {"₹" + (totalFinal2 * 9) / 100}</Text>
+                <Text>CGST(9%) : {"₹" + (totalFinal2 * 9) / 100} </Text> </>
+               ) : (
+                 <><Text>SGST(9%) : {"₹" + 0}</Text>
+                <Text>CGST(9%) : {"₹" + 0} </Text> </> )}
                 <Text display={"flex"}>
                   Tip : &nbsp;
                   <Input
@@ -1050,8 +1117,7 @@ export default function Invoice() {
                 </Text>
                 <Text fontWeight={"semibold"}>
                   Total :{" "}
-                  {/* {"₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2)}{" "} */}
-                  {"₹" + Number(totalFinal2 )}{" "}
+                  {isGstOn ?  "₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2) : "₹" + Number(totalFinal2 )}{" "}
 
                 </Text>
                 <Text display={"flex"}>
@@ -1323,7 +1389,14 @@ export default function Invoice() {
                     colorScheme="orange"
                     as={Link}
                     ml={2}
-                    to={`/invoicegernrate/INV|${selectedDate}|KRUB|${selectdId}`}
+                    // selectedMenuItem === 'Services'
+                    // ? `INV|${selectedDate}|KRUB|${selectdId}`
+                    // : selectedMenuItem === 'Products'
+                    // ? `INV|${curdate}|KRUB|PROD` // Fixed this line
+                    // : '', 
+                    
+                    //  
+                    to={ selectedMenuItem === 'Services' ? `/invoicegernrate/INV|${selectedDate}|KRUB|${selectdId}` : selectedMenuItem === 'Products' ? `/invoicegernrate/INV|${curdate}|KRUB|PROD|${idPInvoice}`: ''}
                     // onClick={() => {
                     //   updateSelectedData(Datapost , selectedServices, selectedDate , "₹" + Number(totalFinal2 + ((totalFinal2 * 9) / 100) * 2));
                     // }}
