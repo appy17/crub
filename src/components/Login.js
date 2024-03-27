@@ -277,7 +277,7 @@ const Login = () => {
               <Text display={"flex"} fontSize={"smaller"} color={"#121212"}>
                 <Text
                   color={"gray"}
-                  // onClick={onOpen} the password box ?
+                  onClick={onOpen} the password box 
                   cursor={"pointer"}
                   _hover={{ color: "#121212", textDecoration: "underline" }}
                   transition={"ease-in 0.3s"}

@@ -169,28 +169,26 @@ function DailyTimetable() {
     // setIsAppointmentSubmitted(false);
   };
 
-  const handleCellClick = (time, employee) => {
-    // Check if the <Td> is disabled
-    // if (
-    //   data.some(  
-    //     (item) =>
-    //       item.hour === time &&
-    //       item.employee === employee &&
-    //       item.date_option === formattedDate
-    //   )
-    // ) {
-    //   return;
-    // }
-
-    setSelectedHour(time);
-    setSelectedEmployee(employee);
-    // setIsPopoverOpen(true);
-    openModal();
-    console.log("opened");
-    //   //
-    //   setClient("");
-    // setSelectedOption("");
-  };
+  // const handleCellClick = (time, employee,index) => {
+    
+  //   setSelectedHour(time);
+  //   setSelectedTime(time);
+  //   setSelectedEmployee(employee);
+  //   // setIsPopoverOpen(true);
+  //   setSelectAptoption((prevOptions) => {
+  //     const newOptions = [...prevOptions];
+  //     newOptions[index].stylistN = employee;
+  //     return newOptions;
+  //   });
+  //   openModal();
+  //   // console.log("opened");
+  //   //   //
+  //   //   setClient("");
+  //   // setSelectedOption("");
+  // };
+  
+  
+  
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleSpecifClick = (stime, semployee) => {
@@ -338,6 +336,17 @@ useEffect(()=>{
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setSelectedHour('');
+    setSelectedTime('');
+    setSelectedEmployee('');
+    setSelectAptoption((prevOptions) => {
+      const newOptions = [...prevOptions];
+      newOptions[0] = {
+        ...newOptions[0],
+        stylistN: '',
+      };
+      return newOptions;
+    });
   };
   // const TimeSlots = {'9:00AM'}
   const [displayS, setdisplays] = useState("none");
@@ -401,9 +410,36 @@ useEffect(()=>{
       status: "scheduled",
     },
   ]);
-
   //
-
+  const handleCellClick = (time, employee) => {
+    // console.log('Before State Update:', selectAptoption);
+  if(employee && time ) {
+    setSelectedHour(time);
+    setSelectedTime(time);
+    setSelectedEmployee(employee);
+  
+    setSelectAptoption((prevOptions) => {
+      const newOptions = [...prevOptions];
+      newOptions[0] = {
+        ...newOptions[0],
+        stylistN: employee,
+      };
+      return newOptions;
+    });
+  
+  
+    openModal();
+  }else{
+    openModal();
+    
+  }
+    // )
+  };
+ 
+  
+  
+  
+    console.log('State Update:', selectAptoption);
   //
   const TimeSlots = [
     "9:00 AM",
@@ -749,7 +785,7 @@ useEffect(()=>{
     // Initialize total time and total price
     let totalTime = 0;
     let totalPrice = 0;
-
+    if (selectedServices && selectedServices.length > 0) {
     // Iterate over selected services and accumulate total time and total price
     selectedServices.forEach((serviceName) => {
       const serviceData = servicedata.find(
@@ -764,41 +800,78 @@ useEffect(()=>{
         totalTime += Number(serviceData.time);
       }
     });
-
+  }
     // Convert total time to hours and minutes
     const h = Math.floor(totalTime / 60);
     const m = totalTime % 60;
 
     return { totalTime, totalPrice, h, m };
-  }
-  function fetchTimeAndPrice2(selectedServices) {
-    // Initialize total time and total price
-    let totalTime = 0;
-    let totalPrice = 0;
+  
+}
+//   function fetchTimeAndPrice2(selectedServices) {
+//     // Initialize total time and total price
+//     let totalTime = 0;
+//     let totalPrice = 0;
 
-    // Iterate over selected services and accumulate total time and total price
+//     // Iterate over selected services and accumulate total time and total price
+//     if (selectedServices && selectedServices.length > 0) {
+   
+//     selectedServices.forEach((option) => {
+//       option.service.forEach((serviceName) => {
+//         const serviceData = servicedata.find(
+//           (data) => data.name_service === serviceName
+//         );
+//         if (serviceData) {
+//           // Extract the price from the selected service data and convert it to a number
+//           const servicePrice = Number(serviceData.price.replace("₹", ""));
+//           totalPrice += servicePrice;
+
+//           // Accumulate total time
+//           totalTime += Number(serviceData.time);
+//         }
+//       });
+//     });
+//   }
+//     // Convert total time to hours and minutes
+//     const h = Math.floor(totalTime / 60);
+//     const m = totalTime % 60;
+
+//     return { totalTime, totalPrice, h, m };
+  
+// }
+function fetchTimeAndPrice2(selectedServices) {
+  // Initialize total time and total price
+  let totalTime = 0;
+  let totalPrice = 0;
+
+  // Check if selectedServices is defined and has the necessary structure
+  if (selectedServices && selectedServices.length > 0) {
     selectedServices.forEach((option) => {
-      option.service.forEach((serviceName) => {
-        const serviceData = servicedata.find(
-          (data) => data.name_service === serviceName
-        );
-        if (serviceData) {
-          // Extract the price from the selected service data and convert it to a number
-          const servicePrice = Number(serviceData.price.replace("₹", ""));
-          totalPrice += servicePrice;
+      // Check if the 'service' property exists and is an array
+      if (option.service && Array.isArray(option.service)) {
+        option.service.forEach((serviceName) => {
+          const serviceData = servicedata.find(
+            (data) => data.name_service === serviceName
+          );
+          if (serviceData) {
+            // Extract the price from the selected service data and convert it to a number
+            const servicePrice = Number(serviceData.price.replace("₹", ""));
+            totalPrice += servicePrice;
 
-          // Accumulate total time
-          totalTime += Number(serviceData.time);
-        }
-      });
+            // Accumulate total time
+            totalTime += Number(serviceData.time);
+          }
+        });
+      }
     });
-
-    // Convert total time to hours and minutes
-    const h = Math.floor(totalTime / 60);
-    const m = totalTime % 60;
-
-    return { totalTime, totalPrice, h, m };
   }
+
+  // Convert total time to hours and minutes
+  const h = Math.floor(totalTime / 60);
+  const m = totalTime % 60;
+
+  return { totalTime, totalPrice, h, m };
+}
 
   // Example usage
   const { totalTime, totalPrice, h, m } = fetchTimeAndPrice2(selectAptoption);
@@ -913,7 +986,7 @@ useEffect(()=>{
   }
   // console.log(stylistServicesArray);
   // status manupuation
-  console.log(data)
+  // console.log(data)
   const updateAppointmentStatus = async (
     appointmentId,
     newStatus,
@@ -961,7 +1034,49 @@ function closeOpen3(){
         fontSize={"25px"}
         mb={4}
       >
-        <Center> Appointment Scheduler </Center>
+        {/* <Center> Appointment Scheduler </Center> */}
+        <Grid templateColumns="repeat(4, 1fr)" gap={4} p={4} fontSize={'sm'}>
+        <Box
+          bg="teal.200"
+          p={4}
+          borderRadius="md"
+          boxShadow="md"
+          height="100%"
+          textAlign="center"
+        >
+          Analysis
+        </Box>
+        <Box
+          bg="orange.200"
+          p={4}
+          borderRadius="md"
+          boxShadow="md"
+          height="100%"
+          textAlign="center"
+        >
+          Analysis
+        </Box>
+        <Box
+          bg="green.200"
+          p={4}
+          borderRadius="md"
+          boxShadow="md"
+          height="100%"
+          textAlign="center"
+        >
+          Analysis
+        </Box>
+        <Box
+          bg="purple.200"
+          p={4}
+          borderRadius="md"
+          boxShadow="md"
+          height="100%"
+          textAlign="center"
+        >
+          Analysis
+        </Box>
+      </Grid>
       </Heading>
       <div>
         <Button
@@ -986,7 +1101,9 @@ function closeOpen3(){
           colorScheme="teal"
           float={"right"}
           isLoading={isLoading}
+          // isDisabled
         >
+
           <BiSolidAddToQueue />
           &nbsp;Add New
         </Button>
@@ -1054,6 +1171,50 @@ function closeOpen3(){
                     id={hour + iteem.name + formattedDate}
                     position={"relative"}
                     bg={"transparent"}
+                    zIndex={1}
+                    // onClick={() => handleSpecifClick()}
+                    // onClick={
+                    //   data.some((item) => {
+                    //     const matchingStylist =
+                    //       item.appointment_option.find(
+                    //         (option) => option.stylistN === iteem.name
+                    //       );
+
+                    //     return (
+                    //       matchingStylist &&
+                    //       compareStartTime(
+                    //         matchingStylist.Initial_T,
+                    //         hour
+                    //       ) &&
+                    //       item.date_option === formattedDate
+                    //     );
+                    //   })
+                    //     ? null
+                    //     : ()=>{handleCellClick(hour , iteem.name )}
+                    // }
+                    onClick={() => {
+                      const isOverlaying = data.some((item) => {
+                        const matchingStylist = item.appointment_option.find(
+                          (option) => option.stylistN === iteem.name
+                        );
+                    
+                        return (
+                          matchingStylist &&
+                          compareStartTime(matchingStylist.Initial_T, hour) &&
+                          item.date_option === formattedDate
+                        );
+                      });
+                    
+                      if (!isOverlaying) {
+                        handleCellClick(hour, iteem.name );
+                      } else {
+                        // Handle the case when the appointment block is overlaying the <Td>
+                        // For example, you can display a message or perform a different action.
+                        console.log("Appointment block is overlaying!");
+                      }
+                    }}
+                    
+                    
               
                   >
                     {data.map((item, itemIndex) => {
@@ -1118,6 +1279,7 @@ function closeOpen3(){
                             onDrag={()=>{console.log('dragged')}}
                               color={"black"}
                               textAlign={"center"}
+                              zIndex={999}
                               width={blockWidthPercentage + "%"}
                               bg={
                                 matchingStylist.status === "done"
@@ -1131,6 +1293,8 @@ function closeOpen3(){
                               position="absolute"
                               height={"full"}
                               top={0}
+                              right={0}
+                              bottom={0}
                               left={leftPositionPercentage + "%"}
                               overflow={"hidden"}
                               opacity={0.9}
@@ -1150,7 +1314,7 @@ function closeOpen3(){
                                     item.date_option === formattedDate
                                   );
                                 })
-                                  ? () => handleSpecifClick(hour, iteem.name)
+                                  ? () => handleSpecifClick(hour, iteem.name )
                                   : null
                               }
                               onContextMenu={(e)=>{rightClickUpdate(e)}}

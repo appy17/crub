@@ -3,6 +3,7 @@ import {
   Button,
   Center,
   Checkbox,
+  Divider,
   Editable,
   EditableInput,
   EditablePreview,
@@ -36,17 +37,28 @@ import {
   Tr,
   VStack,
   extendTheme,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import React, { useContext, useEffect, useState } from "react";
 import { SlCalender } from "react-icons/sl";
 import { IoClose } from "react-icons/io5";
-import { FaSort } from "react-icons/fa6";
+import { FaClock, FaDeleteLeft, FaSort } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAppContext } from "./context/AppContext";
 import { switchTheme } from "./switchTheme";
 import Consumption from "./Inventory/Cosupmtion";
+import { IoFileTrayStacked } from "react-icons/io5";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+} from '@chakra-ui/react'
 export default function Invoice() {
   const [displatS, setdisplayS] = useState("none");
   const [display2, setdisplay2] = useState("none");
@@ -222,7 +234,7 @@ export default function Invoice() {
   // console.log('cuDate' , curdate); 
   console.log('selectedMenu' , selectedMenuItem)
   console.log('selecteddate' , selectedDate)
-
+  
   const insertData = async () => {
     
 
@@ -267,6 +279,7 @@ export default function Invoice() {
         console.error("Error creating data:", error);
       });
   };
+ 
   // const dbpath1 = "http://localhost/backend/";
   const [Edata, setEData] = useState([]);
   // const [filterData , setFilteredData] = useState([]);
@@ -307,37 +320,64 @@ export default function Invoice() {
   // };
   // //
   const [editedValues, setEditedValues] = useState({});
+  const [discounts, setDiscounts] = useState({});
 
+  // const handleDoubleClick = (serviceName) => {
+  //   setIsEditing(true);
+  //   setEditedValues((prev) => ({
+  //     ...prev,
+  //     [serviceName]: {
+  //       service: serviceName,
+  //       value: prev[serviceName] ? Number(prev[serviceName].value) : 0,
+  //     },
+  //   }));
+  //   setSelectedType("flat");
+  // };
   const handleDoubleClick = (serviceName) => {
     setIsEditing(true);
     setEditedValues((prev) => ({
       ...prev,
       [serviceName]: {
         service: serviceName,
-        value: prev[serviceName] ? prev[serviceName].value : 0,
+        value: prev[serviceName] ? parseFloat(prev[serviceName].value) : 0,
       },
+    }));
+    setDiscounts((prev) => ({
+      ...prev,
+      [serviceName]: true, // Set to true when a discount is applied
     }));
     setSelectedType("flat");
   };
-
+  
+  
+  // const handleInputChange = (serviceName, event) => {
+  //   const { value } = Number(event.target);
+  //   setEditedValues((prev) => ({
+  //     ...prev,
+  //     [serviceName]: {
+  //       ...prev[serviceName],
+  //       value,
+  //     },
+  //   }));
+  // };
   const handleInputChange = (serviceName, event) => {
-    const { value } = event.target;
+    const value = event.target.value;  // Get the value from the event target
     setEditedValues((prev) => ({
       ...prev,
       [serviceName]: {
         ...prev[serviceName],
-        value,
+        value: Number(value),  // Convert the value to a number
       },
     }));
   };
-
+  
   const handleInputBlur = (serviceName) => {
     setIsEditing(false);
     setEditedValues((prev) => ({
       ...prev,
       [serviceName]: {
         ...prev[serviceName],
-        value: Number(prev[serviceName].value),
+        value: prev[serviceName].value,
       },
     }));
   };
@@ -578,15 +618,114 @@ export default function Invoice() {
 
  console.log('permissionData' , pData)
  console.log('isGstOn' , isGstOn);
+//  drafts
+const invoice_data_draft = {
+  aptId: selectdId,
+  invoiceID:
+  selectedMenuItem === 'Services'
+    ? `INV|${selectedDate}|KRUB|${selectdId}`
+    : selectedMenuItem === 'Products'
+    ? `INV|${curdate}|KRUB|PROD|${idPInvoice}` // Fixed this line
+    : '',
+  clientName:
+    clientData === ""
+      ? Cname
+      : (Fclientname && Fclientname.name) || "Client Not Found",
+  clientNumber: clientData !== "" ? clientData : search,
+  date: selectedDate === null ? curdate : selectedDate,
+  // stylistName: "your_stylist_name", // Replace with actual stylist name
+  services: arrayOfObjects,
+  priceD: arrayOfObjects,
+  type: selectedType,
+  totalPrice: totalFinal2,
+  discountPrice: totalFinal - totalFinal2,
+  paymentType: service,
+  paid : paid,
+  balance : balance,
+  i_type : selectedMenuItem ,
+  // timestamp : 
+};
+console.log('draft',invoice_data_draft)
+// Function to handle saving the object to local storage
+function saveToLocalStorage() {
+  // Retrieve existing data from local storage or initialize an empty array
+  let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+  invoice_data_draft.timestamp = Date.now();
+  // Push the invoice_data_draft object into the array
+  invoices.push(invoice_data_draft);
+
+  // Store the updated array back into local storage
+  localStorage.setItem('invoices', JSON.stringify(invoices));
+}
+
+const { isOpen, onOpen, onClose } = useDisclosure()
+// Function to fetch the array from local storage
+function fetchFromLocalStorage() {
+  // Retrieve the array from local storage
+  const invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+  return invoices;
+}
+function removeFromLocalStorage(index) {
+  // Retrieve the array from local storage
+  let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+
+  // Remove the element at the specified index
+  invoices.splice(index, 1);
+
+  // Store the updated array back into local storage
+  localStorage.setItem('invoices', JSON.stringify(invoices));
+}
+function removeOldInvoices() {
+  let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+
+  // Get the current time
+  const currentTime = Date.now();
+
+  // Filter out invoices that are older than 24 hours
+  invoices = invoices.filter(invoice => (currentTime - invoice.timestamp) < (24 * 60 * 60 * 1000));
+
+  // Store the updated array back into local storage
+  localStorage.setItem('invoices', JSON.stringify(invoices));
+}
+
+// Call removeOldInvoices every 24 hours
+setInterval(removeOldInvoices, 24 * 60 * 60 * 1000);
+// Example: Fetch the array and log it to the console
+const savedInvoices = fetchFromLocalStorage();
+// console.log('saved',savedInvoices[0].clientName);
+function clickdrafts(i){
+  //  sel
+  setCname(i.clientName)
+  setSearch(i.clientNumber)
+  setSelectedMenuItem(i.i_type)
+  setArrayOfObjects(i.services)
+  setService(i.paymentType)
+}
+
+
+// Function to calculate remaining time for each invoice
+function calculateRemainingTime(invoice) {
+  const currentTime = Date.now();
+  const remainingTime = 24 * 60 * 60 * 1000 - (currentTime - invoice.timestamp);
+  const hours = Math.floor(remainingTime / (60 * 60 * 1000));
+  const minutes = Math.floor((remainingTime % (60 * 60 * 1000)) / (60 * 1000));
+  const seconds = Math.floor((remainingTime % (60 * 1000)) / 1000);
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+
+
+
   return (
     <>
     <Spinner display={servicedata.length > 0 ? 'none': 'block'} color="red"/>
       <Box
         color={"black"}
         // border={"1px solid green"}
-        w={"full"}
+        maxW={'70%'}
         height={"fit-content"}
         p={2}
+
       >
         <Button
           color={"black"}
@@ -601,6 +740,14 @@ export default function Invoice() {
         </Button>
         <Button color={"black"} as={Link} to={"/invoice-view"} opacity={0.5}>
           PREVIOUS INVOICES
+        </Button>
+        <Button color={'black'} variant={'outline'} size={"md"} colorScheme='orange'  ml={6} float={'right'}
+        onClick={onOpen}>
+        <IoFileTrayStacked /> Draft List
+        </Button>
+        <Button color={'black'} colorScheme='yellow' size={"md"} variant={'outline'}  ml={6} float={"right"}
+         onClick={saveToLocalStorage}>
+        <IoFileTrayStacked /> Save Draft
         </Button>
         {selectdId ? (
           <Text
@@ -618,6 +765,34 @@ export default function Invoice() {
           ""
         )}
       </Box>
+      {/* drafts */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Invoice Drafts</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody flexDirection={'row'}>
+          {savedInvoices.map((i,index)=>(
+            <Box key={index} display={'flex'} flexDirection={'row'} justifyContent={'space-between'} mb={4} p={2} borderBottom={'1px solid grey'}>
+              <Text onClick={()=>{clickdrafts(i)}} cursor={'pointer'}  justifyContent={'space-between'}>
+                Krub Invoice | {i.date} 
+              </Text>
+              <Tag onClick={()=>{removeFromLocalStorage(index)}}>
+                <FaDeleteLeft  cursor={'pointer'}/>&nbsp;Delete
+              </Tag>
+              <Tag >
+              <FaClock/>&nbsp; {calculateRemainingTime(i)}
+              </Tag>
+            </Box>
+          ))}
+        </ModalBody>
+        <Divider/>
+        <ModalFooter>
+          <Text>The Draft will expire in 24 hours</Text>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+      {/*  */}
       <Box display={"flex"} gap={4}>
         <Box
           h={"fit-content"}
@@ -784,15 +959,27 @@ export default function Invoice() {
                       //     ? "₹" +
                       //       (serviceData.price - Number(editedService.value))
                       //     : "₹" + Number(serviceData.price);
-                      const editedService = editedValues[obj.checkboxValue];
-                      const InitialTotal = editedService
-                        ? serviceData ? serviceData.price : pData.price - editedService.value
-                        : Number(serviceData ? serviceData.price : pData.price);
+                      // const editedService = editedValues[obj.checkboxValue];
+                      // const InitialTotal = editedService
+                      //   ? serviceData ? serviceData.price : pData.price - Number(editedService.value)
+                      //   : Number(serviceData ? serviceData.price : pData.price);
 
-                      totalFinal2 = InitialTotal + totalFinal2;
-                      const prevInitialTotal = Number(serviceData ? serviceData.price : pData.price);
-                      totalFinal = prevInitialTotal + totalFinal;
-                      
+                      // totalFinal2 = InitialTotal + totalFinal2;
+                      // const prevInitialTotal = Number(serviceData ? serviceData.price : pData.price);
+                      // totalFinal = prevInitialTotal + Number(totalFinal);
+                      // Inside the mapping logic
+const editedService = editedValues[obj.checkboxValue];
+const isDiscounted = discounts[obj.checkboxValue];
+const prevInitialTotal = Number(serviceData ? serviceData.price : pData.price);
+const InitialTotal = editedService
+  ? isDiscounted
+    ? prevInitialTotal - Number(editedService.value)
+    : prevInitialTotal
+  : prevInitialTotal;
+
+totalFinal2 = InitialTotal + totalFinal2;
+totalFinal = prevInitialTotal + totalFinal;
+
 
                       return (
                         <Tr
@@ -1085,7 +1272,7 @@ export default function Invoice() {
                 fontSize={"sm"}
               >
                 <Text>Subtotal : {"₹" + Number(totalFinal)}</Text>
-                <Text>Discount : {"₹" + (totalFinal - totalFinal2)} </Text>
+                <Text>Discount : {"₹" + Number(totalFinal - totalFinal2)} </Text>
                 <Text>Net: {"₹" + totalFinal2}</Text>
                {isGstOn ? ( <><Text>SGST(9%) : {"₹" + (totalFinal2 * 9) / 100}</Text>
                 <Text>CGST(9%) : {"₹" + (totalFinal2 * 9) / 100} </Text> </>
