@@ -109,8 +109,8 @@ import {
 } from "react-icons/bi";
 import { IoCalendar } from "react-icons/io5";
 import { MdDeleteOutline, MdPunchClock } from "react-icons/md";
-import DropdownWithCheckboxes from "./util/Services";
-import Data2 from "./util/Employee";
+// import DropdownWithCheckboxes from "./util/Services";
+// import Data2 from "./util/Employee";
 import { FaPhoneAlt, FaSearch, FaUser } from "react-icons/fa";
 import AddClient from "./AddClient";
 import { MdOutlineRestartAlt } from "react-icons/md";
@@ -118,9 +118,24 @@ import { useAppContext } from "./context/AppContext";
 
 // import { Skeleton, SkeletonCircle, SkeletonText } from '@chakra-ui/react'
 
+
+
+
+
+
+
+
+
+
 function DailyTimetable() {
   const [isLoading, setIsLoading] = useState(true);
   // Example data for employees and hours
+  const [data, setData] = useState([]);
+  const [bookedStylist, setBookedStylist] = useState([])
+  const [match, setMatch] = useState({})
+  
+  const [Edata, setEData] = useState([]);
+
 
   const hours = [
     "9:00 AM",
@@ -138,7 +153,8 @@ function DailyTimetable() {
     "9:00 PM",
     "10:00 PM",
   ];
-
+const newDate = new Date()
+console.log(newDate)
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -245,13 +261,13 @@ function DailyTimetable() {
         console.error("Error creating data:", error);
       });
   };
-  const [data, setData] = useState([]);
   const dbpath1 = "http://localhost/backend/";
 
   const loadData = async () => {
     try {
       const response = await axios.get(dbpath1 + "getDataapt.php");
       const data = response.data.phpresult;
+      console.log("appoinment", data)
       setData(data);
       setIsLoading(false);
     } catch (error) {
@@ -286,12 +302,12 @@ useEffect(()=>{
 
 
   // get Employee Data
-  const [Edata, setEData] = useState([]);
 
   const loadEmployeeData = async () => {
     try {
       const response = await axios.get(dbpath1 + "getEmployeedata.php");
       const Employeedata = response.data.phpresult;
+      console.log("Employeedata",Employeedata);
       setEData(Employeedata);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -338,6 +354,7 @@ useEffect(()=>{
     setIsModalOpen(false);
     setSelectedHour('');
     setSelectedTime('');
+    // setClient("")
     setSelectedEmployee('');
     setSelectAptoption((prevOptions) => {
       const newOptions = [...prevOptions];
@@ -436,10 +453,27 @@ useEffect(()=>{
     // )
   };
  
-  
-  
-  
-    console.log('State Update:', selectAptoption);
+    console.log('State Update:', selectAptoption[0].Initial_T);
+
+useEffect(()=> {
+const final = bookedStylist.find((item)=> selectAptoption[0].Initial_T == item.init_T )
+console.log("final", final)
+setMatch(final)
+
+if(final){
+  let filterEmployeeData =  Edata?.filter((item) => item?.name != final.stylist_Name)
+  // Edata?.filter((item) =>{
+    //   if()
+    //   console.log(item.name)
+    // })
+    // console.log("final priya Sharma",final.stylist_Name)
+ setEData(filterEmployeeData)
+}
+
+
+
+},[selectAptoption])
+
   //
   const TimeSlots = [
     "9:00 AM",
@@ -496,26 +530,7 @@ useEffect(()=>{
     "9:45 PM",
     "10:00 PM",
   ];
-  // const [newSelectedTime2 , setnewselectdtime] = useState('');
-  // const handleTimeChange = (e) => {
-  //   const newSelectedTime = e.target.value;
-  //   setSelectedTime(newSelectedTime);
-  //   setSelectAptoption((prevOptions) => {
-  //     const updatedOptions = prevOptions.map((option, index) => {
-  //       if (index === 0) {
-  //         const { totalTime } = fetchTimeAndPrice(option.service);
-  //         return {
-  //           ...option,
-  //           Initial_T: index > 0 ? prevOptions[index - 1].End_T : newSelectedTime,
-  //           End_T: calculateEndTime(newSelectedTime, totalTime),
-  //         };
-  //       }
-  //       return option;
-  //     });
-  //     console.log(updatedOptions);
-  //     return updatedOptions;
-  //   });
-  // };
+ 
   const handleTimeChange = (e) => {
     const newSelectedTime = e.target.value;
     setSelectedTime(newSelectedTime);
@@ -545,6 +560,7 @@ useEffect(()=>{
 
       return updatedOptions;
     });
+    console.log("Seee",selectAptoption);
   };
 
   //  console.log(data);
@@ -577,7 +593,7 @@ useEffect(()=>{
       );
       const data = response.data.phpresult;
       setClinetData(data);
-      // console.log(data);
+       console.log("data",data);
     } catch (error) {
       console.error("Error loading data:", error);
     }
@@ -752,35 +768,7 @@ useEffect(()=>{
   const updateDisabled = (value) => {
     setDisabled(value);
   };
-  // function fetchTimeAndPrice(selectedServices) {
-  //   // Initialize total time and total price
-  //   let totalTime = 0;
-  //   let totalPrice = 0;
-
-  //   // Iterate over selected services and accumulate total time and total price
-  //   selectedServices.forEach((serviceName) => {
-  //     // option.service.forEach((serviceName) => {
-  //     const serviceData = servicedata.find(
-  //       (data) => data.name_service === serviceName
-  //     );
-  //     if (serviceData) {
-  //       // Extract the price from the selected service data and convert it to a number
-  //       // const servicePrice = parseFloat(serviceData.price.replace("₹", ""));
-  //       const servicePrice = Number(serviceData.price);
-  //       totalPrice += servicePrice;
-
-  //       // Accumulate total time
-  //       totalTime += Number(serviceData.time);
-  //     }
-  //     // });
-  //   });
-
-  //   // Convert total time to hours and minutes
-  //   const h = Math.floor(totalTime / 60);
-  //   const m = totalTime % 60;
-
-  //   return { totalTime, totalPrice, h, m };
-  // }
+  
   function fetchTimeAndPrice(selectedServices) {
     // Initialize total time and total price
     let totalTime = 0;
@@ -808,37 +796,7 @@ useEffect(()=>{
     return { totalTime, totalPrice, h, m };
   
 }
-//   function fetchTimeAndPrice2(selectedServices) {
-//     // Initialize total time and total price
-//     let totalTime = 0;
-//     let totalPrice = 0;
 
-//     // Iterate over selected services and accumulate total time and total price
-//     if (selectedServices && selectedServices.length > 0) {
-   
-//     selectedServices.forEach((option) => {
-//       option.service.forEach((serviceName) => {
-//         const serviceData = servicedata.find(
-//           (data) => data.name_service === serviceName
-//         );
-//         if (serviceData) {
-//           // Extract the price from the selected service data and convert it to a number
-//           const servicePrice = Number(serviceData.price.replace("₹", ""));
-//           totalPrice += servicePrice;
-
-//           // Accumulate total time
-//           totalTime += Number(serviceData.time);
-//         }
-//       });
-//     });
-//   }
-//     // Convert total time to hours and minutes
-//     const h = Math.floor(totalTime / 60);
-//     const m = totalTime % 60;
-
-//     return { totalTime, totalPrice, h, m };
-  
-// }
 function fetchTimeAndPrice2(selectedServices) {
   // Initialize total time and total price
   let totalTime = 0;
@@ -937,7 +895,7 @@ function fetchTimeAndPrice2(selectedServices) {
       return;
     }
 
-    const [, startHour, , startPeriod] = startMatch.map((matchPart) =>
+    const [ ,startHour, , startPeriod] = startMatch.map((matchPart) =>
       isNaN(Number(matchPart)) ? matchPart : Number(matchPart).toString()
     );
 
@@ -1003,7 +961,7 @@ function fetchTimeAndPrice2(selectedServices) {
       );
       loadData();
       if (response.data.success) {
-        console.log("Status updated successfully");
+        // console.log("Status updated successfully",response.data.success);
         // Optionally, you can update the UI or take other actions here
       }
       //   console.error('Error updating status:', response.data.error);
@@ -1026,6 +984,97 @@ setOpen3(true);
 function closeOpen3(){
   setOpen3(false);
 }
+
+// const [filterData,setFilterData] = useState([]);
+
+// // const callOnModalOpen =()=>{
+//   const last = "11:30 AM";
+//   const lastIndex = TimeSlots.indexOf(last); // Find the index of "11:30 AM"
+//   const nextTimeSlots = TimeSlots.slice(lastIndex + 1); // Create a new array starting from the next index
+//   setFilterData(nextTimeSlots);
+//   // Now, nextTimeSlots contains the time slots after "11:30 AM"
+//   console.log(nextTimeSlots);
+// // }
+
+// const checkForOverlap = (appointments, start, end, currentItemId) => {
+//   for (const appointment of appointments) {
+//     if (appointment.id !== currentItemId) { // Skip checking against the current appointment
+//       const appointmentStart = appointment.Initial_T;
+//       const appointmentEnd = appointment.End_T;
+
+//       if (
+//         (start >= appointmentStart && start < appointmentEnd) || // Check if start time is within existing appointment
+//         (end > appointmentStart && end <= appointmentEnd) || // Check if end time is within existing appointment
+//         (start <= appointmentStart && end >= appointmentEnd) // Check if existing appointment is within the current appointment
+//       ) {
+//         return true; // Overlap found
+//       }
+//     }
+//   }
+//   return false; // No overlap
+// };
+// const checkForOverlap = (appointments, start, end, currentItemId) => {
+//   for (const appointment of appointments) {
+//     if (appointment.id !== currentItemId) { // Skip checking against the current appointment
+//       const appointmentStart = appointment.Initial_T;
+//       const appointmentEnd = appointment.End_T;
+
+//       if (
+//         (start >= appointmentStart && start < appointmentEnd) || // Check if start time is within existing appointment
+//         (end > appointmentStart && end <= appointmentEnd) || // Check if end time is within existing appointment
+//         (start <= appointmentStart && end >= appointmentEnd) // Check if existing appointment is within the current appointment
+//       ) {
+//         return true; // Overlap found
+//       }
+//     }
+//   }
+//   return false; // No overlap
+// };
+
+// const handleCellClick = (time, employee) => {
+//   if (employee && time) {
+//     setSelectedHour(time);
+//     setSelectedTime(time);
+//     setSelectedEmployee(employee);
+
+//     const start = time; // Assuming 'time' is the start time
+//     const end = calculateEndTime(time, totalTime); // Calculate end time based on service duration
+
+//     const isOverlap = checkForOverlap(selectAptoption, start, end, null); // Check for overlap
+
+//     if (!isOverlap) {
+//       // No overlap, proceed to open the modal
+//       openModal();
+//     } else {
+//       // Overlap found, handle accordingly (e.g., show a message to the user)
+//       console.log('Overlap found, cannot schedule appointment at this time.');
+//     }
+//   } else {
+//     openModal();
+//   }
+// };
+
+
+
+ // Output: "2024-04-25" (for example)
+
+
+   
+
+useEffect(()=>{
+  const calenderData = data?.filter((item)=> item.date_option == formattedDate)
+  // console.log("filterData",calenderData.appointment_option)
+  // console.log("filterDataAll",calenderData)
+
+  calenderData.map((item)=> {
+    let newStylist = {init_T:item.appointment_option[0].Initial_T,final_T:item.appointment_option[0].End_T,stylist_Name:item.appointment_option[0].stylistN, date:item.date_option, status:item.status,id:item.id}
+   setBookedStylist([...bookedStylist, newStylist])
+  })
+}, [data])
+
+// console.log("mukesh",bookedStylist)
+
+
   return (
     <Box p={4}>
       <Heading
@@ -1034,7 +1083,7 @@ function closeOpen3(){
         fontSize={"25px"}
         mb={4}
       >
-        {/* <Center> Appointment Scheduler </Center> */}
+        <Center> Appointment Scheduler </Center></Heading>
         <Grid templateColumns="repeat(4, 1fr)" gap={4} p={4} fontSize={'sm'}>
         <Box
           bg="teal.200"
@@ -1077,7 +1126,7 @@ function closeOpen3(){
           Analysis
         </Box>
       </Grid>
-      </Heading>
+      
       <div>
         <Button
           onClick={goToPreviousDate}
@@ -1113,6 +1162,8 @@ function closeOpen3(){
           <IoCalendar />
           &nbsp;{formattedDate}
         </Text>
+
+        {/* calendar table box */}
         <Box display={"flex"} mb={4}>
           <Text color={"black"} mr={6} fontSize={"small"}>
             {" "}
@@ -1217,6 +1268,7 @@ function closeOpen3(){
                     
               
                   >
+                   {/* updated  */}
                     {data.map((item, itemIndex) => {
                       const matchingStylist = item.appointment_option.find(
                         (option) => option.stylistN === iteem.name
@@ -1470,12 +1522,13 @@ function closeOpen3(){
                   onChange={handleTimeChange}
                   value={selectedTime}
                 >
+                  
                   {TimeSlots.map((time) => (
                     <option value={time}>{time}</option>
                   ))}
                 </Select>
               </InputGroup>
-            </Box>
+            </Box> 
             {/* select Staff */}
 
             {selectAptoption.map((options, index) => (
@@ -1511,13 +1564,15 @@ function closeOpen3(){
                             {isOpen ? "Close List" : "Select Stylist"}
                           </MenuButton>
                           <MenuList maxH={"250px"} overflowY={"scroll"}>
+
                             {Edata.map((item, i) => (
                               <MenuItem key={i}>
                                 <RadioGroup
                                   value={options.stylistN}
                                   onChange={(e) => toggleItem2(e, index)}
                                 >
-                                  <Radio value={item.name}>{item.name}</Radio>
+                           {/* {console.log(item.name)} */}
+                                <Radio value={item.name}>{item.name}</Radio>
                                 </RadioGroup>
                               </MenuItem>
                             ))}
@@ -2129,6 +2184,8 @@ function closeOpen3(){
         </ModalContent>
       </Modal>
       {/* {console.log(formattedDate)} */}
+
+      
     </Box>
   );
 }

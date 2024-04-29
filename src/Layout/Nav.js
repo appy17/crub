@@ -24,25 +24,10 @@ import Notifications from "./Notifications";
 
 export default function Nav() {
   const { logout } = useAppContext();
-//  const storage = JSON.parse(localStorage.getItem('#data'))
+
  const userName = localStorage.getItem('name');
   const { isOpen, onOpen, onClose } = useDisclosure()
-  // const [ipAdd, setIp] = useState('undefined');
-
-  // const fetchIpAddress = async () => {
-  //   try {
-  //     const response = await fetch('https://api.ipify.org/?format=json');
-  //     const data = await response.json();
-  //     setIp(data.ip);
-  //   } catch (error) {
-  //     console.error('Error fetching IP address:', error);
-  //     setIp('undefined');
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchIpAddress();
-  // }, []);
+  
   return (
     <Box
       borderBottom={"1px solid whitesmoke"}

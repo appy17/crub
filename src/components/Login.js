@@ -61,7 +61,7 @@ const Login = () => {
       setdis3("flex");
     }, 520);
   }
-  //  const [data , setdata] = useState({definde_id : '' , key_secret : ''});
+
 
   const isButtonDisabled = email === "" || password === "";
   const { authUser, login, loading } = useAppContext();
@@ -86,10 +86,6 @@ const Login = () => {
   };
 
   const handleLogin = (e) => {
-    // setdata({
-    //   definde_id : email,
-    //   key_secret : ency
-    // })
     login(email, ency);
     e.preventDefault(); // Prevents the default form submission behavior
     // Your login logic here

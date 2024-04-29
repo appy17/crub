@@ -350,16 +350,7 @@ export default function Invoice() {
   };
   
   
-  // const handleInputChange = (serviceName, event) => {
-  //   const { value } = Number(event.target);
-  //   setEditedValues((prev) => ({
-  //     ...prev,
-  //     [serviceName]: {
-  //       ...prev[serviceName],
-  //       value,
-  //     },
-  //   }));
-  // };
+ 
   const handleInputChange = (serviceName, event) => {
     const value = event.target.value;  // Get the value from the event target
     setEditedValues((prev) => ({
@@ -572,10 +563,6 @@ export default function Invoice() {
   }
   useEffect(()=>{
     setbalance(totalFinal2 - paid);
-    // settotalPrice(totalFinal);
-    // settotalPrice2(totalFinal2);
-    // setpaid(totalFinal2);
-    // setbalance(totalFinal2 - paid);
   },[totalFinal , totalFinal2, paid ])
   
   
@@ -674,6 +661,7 @@ function removeFromLocalStorage(index) {
 
   // Store the updated array back into local storage
   localStorage.setItem('invoices', JSON.stringify(invoices));
+  onClose();
 }
 function removeOldInvoices() {
   let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
